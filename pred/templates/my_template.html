@@ -1,0 +1,198 @@
+{# myapp/templates/my_template.html #}
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>Form Input Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"], input[type="email"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        select {
+            background-color: white;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .user-welcome {
+            color: #666;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .nav-link {
+            text-decoration: none;
+            margin-right: 15px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .nav-link:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+        <div style="text-align: right; margin-bottom: 20px;">
+            {% if is_authenticated %}
+                <!-- Links for authenticated users -->
+                <span class="user-welcome">
+                    👋 Selamat datang, {{ user.get_full_name|default:user.username }}!
+                </span>
+                <a href="/pred/history/" class="nav-link" style="color: #007bff;">📋 Lihat Riwayat</a>
+                {% if is_admin %}
+                    <a href="/pred/admin/dashboard/" class="nav-link" style="color: #dc3545;">⚙️ Dashboard Admin</a>
+                {% elif is_expert %}
+                    <a href="/pred/admin/dashboard/" class="nav-link" style="color: #28a745;">🔬 Dashboard Ahli</a>
+                {% endif %}
+                <a href="/pred/logout/" class="nav-link" style="color: #dc3545;">🚪 Keluar</a>
+            {% else %}
+                <!-- Links for anonymous users -->
+                <a href="/pred/history/" class="nav-link" style="color: #007bff;">📋 Lihat Riwayat</a>
+                <a href="/pred/login/" class="nav-link" style="color: #28a745;">🔐 Masuk</a>
+                <a href="/pred/register/" class="nav-link" style="color: #6f42c1;">📝 Daftar</a>
+            {% endif %}
+        </div>
+        <h2>Formulir Input Data</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Gender -->
+            <div class="form-group">
+                <label for="gender" class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                {{ form.gender }}
+                {% if form.gender.errors %}
+                    <div class="error">{{ form.gender.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Age -->
+            <div class="form-group">
+                <label for="age" class="block text-sm font-medium text-gray-700">Usia</label>
+                {{ form.age }}
+                {% if form.age.errors %}
+                    <div class="error">{{ form.age.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Work Pressure -->
+            <div class="form-group">
+                <label for="work_pressure" class="block text-sm font-medium text-gray-700">Tekanan Kerja</label>
+                {{ form.work_pressure }}
+                {% if form.work_pressure.errors %}
+                    <div class="error">{{ form.work_pressure.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Job Satisfaction -->
+            <div class="form-group">
+                <label for="job_satisfaction" class="block text-sm font-medium text-gray-700">Kepuasan Kerja</label>
+                {{ form.job_satisfaction }}
+                {% if form.job_satisfaction.errors %}
+                    <div class="error">{{ form.job_satisfaction.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Financial Stress -->
+            <div class="form-group">
+                <label for="financial_stress" class="block text-sm font-medium text-gray-700">Stres Keuangan</label>
+                {{ form.financial_stress }}
+                {% if form.financial_stress.errors %}
+                    <div class="error">{{ form.financial_stress.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Sleep Duration -->
+            <div class="form-group">
+                <label for="sleep_duration" class="block text-sm font-medium text-gray-700">Durasi Tidur</label>
+                {{ form.sleep_duration }}
+                {% if form.sleep_duration.errors %}
+                    <div class="error">{{ form.sleep_duration.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Dietary Habits -->
+            <div class="form-group">
+                <label for="dietary_habits" class="block text-sm font-medium text-gray-700">Kebiasaan Makan</label>
+                {{ form.dietary_habits }}
+                {% if form.dietary_habits.errors %}
+                    <div class="error">{{ form.dietary_habits.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Suicidal Thoughts -->
+            <div class="form-group">
+                <label for="suicidal_thoughts" class="block text-sm font-medium text-gray-700">Apakah Anda pernah memiliki pikiran untuk bunuh diri?</label>
+                {{ form.suicidal_thoughts }}
+                {% if form.suicidal_thoughts.errors %}
+                    <div class="error">{{ form.suicidal_thoughts.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Work Hours -->
+            <div class="form-group">
+                <label for="work_hours" class="block text-sm font-medium text-gray-700">Jam Kerja</label>
+                {{ form.work_hours }}
+                {% if form.work_hours.errors %}
+                    <div class="error">{{ form.work_hours.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Family History of Mental Illness -->
+            <div class="form-group">
+                <label for="family_history_of_mental_illness" class="block text-sm font-medium text-gray-700">Riwayat Keluarga Penyakit Mental</label>
+                {{ form.family_history_of_mental_illness }}
+                {% if form.family_history_of_mental_illness.errors %}
+                    <div class="error">{{ form.family_history_of_mental_illness.errors }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit">Kirim</button>
+        </form>
+    </div>
+  </body>
+</html>
