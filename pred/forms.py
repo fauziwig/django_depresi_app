@@ -7,7 +7,7 @@ class MyForm(forms.Form):
     # Dropdown choices
     GENDER_CHOICES = [
         ('', 'Pilih Gender'),
-        ('1', 'Laki Laki'),
+        ('1', 'Laki-laki'),
         ('0', 'Perempuan'),
     ]
 
@@ -15,30 +15,30 @@ class MyForm(forms.Form):
         ('', 'Pilih Opsi'),
         ('1', 'Sangat Rendah'),
         ('2', 'Rendah'),
-        ('3', 'Medium'),
+        ('3', 'Sedang'),
         ('4', 'Tinggi'),
         ('5', 'Sangat Tinggi'),
     ]
 
     SLEEP_DURATION_CHOICES = [
-        ('', 'Pilih Tipe'),
-        ('0', 'Kurang dari 5 Jam'),
-        ('1', '5-6 Jam'),
-        ('2', '7-8 Jam'),
+        ('', 'Pilih Opsi'),
+        ('0', '5-6 Jam'),
+        ('1', '7-8 Jam'),
+        ('2', 'Kurang dari 5 Jam'),
         ('3', 'Lebih dari 8 Jam'),
     ]
 
     DIETARY_HABITS_CHOICES = [
-        ('', 'Pilih Tipe'),
+        ('', 'Pilih Opsi'),
         ('0', 'Sehat'),
-        ('1', 'Sedang / Medium'),
+        ('1', 'Sedang'),
         ('2', 'Tidak Sehat'),
     ]
 
     YES_NO_CHOICES = [
-        ('', 'Pilih Status'),
-        ('1', 'Yes'),
-        ('0', 'No'),
+        ('', 'Pilih Opsi'),
+        ('1', 'Ya'),
+        ('0', 'Tidak'),
     ]
 
     # Form fields
@@ -50,11 +50,11 @@ class MyForm(forms.Form):
     )
 
     age = forms.IntegerField(
-        label="Usia (Age)",
+        label="Usia",
         required=True,
         widget=forms.NumberInput(attrs={
             'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
-            'placeholder': 'Masukkan Usia'
+            'placeholder': 'Masukkan usia Anda'
         })
     )
 
@@ -74,14 +74,14 @@ class MyForm(forms.Form):
 
     financial_stress = forms.ChoiceField(
         choices=PRESSURE_CHOICES,
-        label="Tekanan Finansial",
+        label="Stres Keuangan",
         required=True,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
     )
 
     sleep_duration = forms.ChoiceField(
         choices=SLEEP_DURATION_CHOICES,
-        label="Durasi Tidur Per Hari",
+        label="Durasi Tidur",
         required=True,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
     )
@@ -95,13 +95,13 @@ class MyForm(forms.Form):
 
     suicidal_thoughts = forms.ChoiceField(
         choices=YES_NO_CHOICES,
-        label="Pernahkah Anda memiliki pikiran untuk bunuh diri??",
+        label="Apakah Anda pernah memiliki pikiran untuk bunuh diri?",
         required=True,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
     )
 
     work_hours = forms.IntegerField(
-        label="Jam Kerja Per Hari",
+        label="Jam Kerja",
         required=True,
         widget=forms.NumberInput(attrs={
             'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
@@ -111,7 +111,7 @@ class MyForm(forms.Form):
 
     family_history_of_mental_illness = forms.ChoiceField(
         choices=YES_NO_CHOICES,
-        label="Riwayat Penyakit Mental Keluarga",
+        label="Riwayat Keluarga Penyakit Mental",
         required=True,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
     )

@@ -27,7 +27,7 @@ A comprehensive Django web application that uses machine learning to predict dep
 - **Backend**: Django 4.2+
 - **Machine Learning**: scikit-learn, pandas, numpy
 - **Model Format**: joblib
-- **Database**: SQLite (default, easily changeable)
+- **Database**: SQLite (optimized for this application)
 - **Frontend**: HTML5, CSS3, Tailwind CSS
 - **Authentication**: Django built-in auth system
 
@@ -163,7 +163,7 @@ The system uses a pre-trained machine learning model (`depression_prediction_mod
 
 For production deployment, consider:
 
-1. **Database**: Switch to PostgreSQL or MySQL
+1. **Database**: SQLite is suitable for most deployments (see SQLITE_OPTIMIZATION.md)
 2. **Static Files**: Configure static file serving
 3. **Security**: Update `SECRET_KEY` and security settings
 4. **Environment Variables**: Use environment variables for sensitive data

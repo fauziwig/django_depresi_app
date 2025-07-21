@@ -27,6 +27,53 @@ def is_expert(user):
 def has_admin_access(user):
     return is_admin(user) or is_expert(user)
 
+# Display helper functions to convert database values to human-readable text
+def get_gender_display(value):
+    """Convert gender database value to display text"""
+    gender_choices = {
+        '1': 'Laki laki',
+        '0': 'Perempuan'
+    }
+    return gender_choices.get(str(value), 'Tidak Diketahui')
+
+def get_pressure_display(value):
+    """Convert pressure-related database value to display text"""
+    pressure_choices = {
+        '1': 'Sangat Rendah',
+        '2': 'Rendah',
+        '3': 'Sedang',
+        '4': 'Tinggi',
+        '5': 'Sangat Tinggi'
+    }
+    return pressure_choices.get(str(value), 'Tidak Diketahui')
+
+def get_sleep_duration_display(value):
+    """Convert sleep duration database value to display text"""
+    sleep_choices = {
+        '0': '5-6 Jam',
+        '1': '7-8 Jam',
+        '2': 'Kurang dari 5 Jam',
+        '3': 'Lebih dari 8 Jam'
+    }
+    return sleep_choices.get(str(value), 'Tidak Diketahui')
+
+def get_dietary_habits_display(value):
+    """Convert dietary habits database value to display text"""
+    dietary_choices = {
+        '0': 'Sehat',
+        '1': 'Sedang',
+        '2': 'Tidak Sehat'
+    }
+    return dietary_choices.get(str(value), 'Tidak Diketahui')
+
+def get_yes_no_display(value):
+    """Convert yes/no database value to display text"""
+    yes_no_choices = {
+        '1': 'Ya',
+        '0': 'Tidak'
+    }
+    return yes_no_choices.get(str(value), 'Tidak Diketahui')
+
 # Load the ML model
 def load_depression_model():
     """Load the depression prediction model"""
@@ -158,16 +205,16 @@ def find_similar_cases(form_data):
 
             top_matches.append({
                 'similarity': float(similarity_score * 100),  # Convert to percentage and ensure float
-                'gender': 'Laki-laki' if match_data['gender'] == 1 else 'Perempuan',
+                'gender': get_gender_display(match_data['gender']),
                 'age': int(match_data['age']),  # Convert to regular int
-                'work_pressure': int(match_data['work_pressure']),
-                'job_satisfaction': int(match_data['job_satisfaction']),
-                'sleep_duration': int(match_data['sleep_duration']),
-                'dietary_habits': int(match_data['dietary_habits']),
-                'suicidal_thoughts': 'Ya' if match_data['suicidal_thoughts'] == 1 else 'Tidak',
+                'work_pressure': get_pressure_display(match_data['work_pressure']),
+                'job_satisfaction': get_pressure_display(match_data['job_satisfaction']),
+                'sleep_duration': get_sleep_duration_display(match_data['sleep_duration']),
+                'dietary_habits': get_dietary_habits_display(match_data['dietary_habits']),
+                'suicidal_thoughts': get_yes_no_display(match_data['suicidal_thoughts']),
                 'work_hours': int(match_data['work_hours']),
-                'financial_stress': int(match_data['financial_stress']),
-                'family_history': 'Ya' if match_data['family_history_of_mental_illness'] == 1 else 'Tidak',
+                'financial_stress': get_pressure_display(match_data['financial_stress']),
+                'family_history': get_yes_no_display(match_data['family_history_of_mental_illness']),
                 'depression': 'Positif' if match_data['depression'] == 1 else 'Negatif'
             })
 
@@ -176,16 +223,16 @@ def find_similar_cases(form_data):
             'best_similarity': float(best_similarity * 100),  # Convert to percentage and ensure float
             'best_match_idx': int(best_match_idx),  # Store the index
             'best_match': {
-                'gender': 'Laki-laki' if best_match_row['gender'] == 1 else 'Perempuan',
+                'gender': get_gender_display(best_match_row['gender']),
                 'age': int(best_match_row['age']),  # Convert to regular int
-                'work_pressure': int(best_match_row['work_pressure']),
-                'job_satisfaction': int(best_match_row['job_satisfaction']),
-                'sleep_duration': int(best_match_row['sleep_duration']),
-                'dietary_habits': int(best_match_row['dietary_habits']),
-                'suicidal_thoughts': 'Ya' if best_match_row['suicidal_thoughts'] == 1 else 'Tidak',
+                'work_pressure': get_pressure_display(best_match_row['work_pressure']),
+                'job_satisfaction': get_pressure_display(best_match_row['job_satisfaction']),
+                'sleep_duration': get_sleep_duration_display(best_match_row['sleep_duration']),
+                'dietary_habits': get_dietary_habits_display(best_match_row['dietary_habits']),
+                'suicidal_thoughts': get_yes_no_display(best_match_row['suicidal_thoughts']),
                 'work_hours': int(best_match_row['work_hours']),
-                'financial_stress': int(best_match_row['financial_stress']),
-                'family_history': 'Ya' if best_match_row['family_history_of_mental_illness'] == 1 else 'Tidak',
+                'financial_stress': get_pressure_display(best_match_row['financial_stress']),
+                'family_history': get_yes_no_display(best_match_row['family_history_of_mental_illness']),
                 'depression': 'Positif' if best_match_row['depression'] == 1 else 'Negatif'
             },
             'top_matches': top_matches,
@@ -480,9 +527,9 @@ def results_view(request):
                             <div class="field-name">Jam Kerja</div>
                             <div class="field-value">{similarity_result.get('best_match', {}).get('work_hours', 'N/A')}</div>
                         </div>
-                        <div class="match-field" style="background-color: {'#ffebee' if similarity_result.get('best_match', {}).get('depression') == 'Positive' else '#e8f5e8'};">
+                        <div class="match-field" style="background-color: {'#ffebee' if similarity_result.get('best_match', {}).get('depression') == 'Positif' else '#e8f5e8'};">
                             <div class="field-name">Status Depresi</div>
-                            <div class="field-value" style="color: {'#d32f2f' if similarity_result.get('best_match', {}).get('depression') == 'Positive' else '#388e3c'}; font-weight: bold;">
+                            <div class="field-value" style="color: {'#d32f2f' if similarity_result.get('best_match', {}).get('depression') == 'Positif' else '#388e3c'}; font-weight: bold;">
                                 {similarity_result.get('best_match', {}).get('depression', 'N/A')}
                             </div>
                         </div>
@@ -518,10 +565,25 @@ def results_view(request):
 
     for field_name, field_value in form_data.items():
         label = field_labels.get(field_name, field_name.title())
+
+        # Convert database values to display values
+        if field_name == 'gender':
+            display_value = get_gender_display(field_value)
+        elif field_name in ['work_pressure', 'job_satisfaction', 'financial_stress']:
+            display_value = get_pressure_display(field_value)
+        elif field_name == 'sleep_duration':
+            display_value = get_sleep_duration_display(field_value)
+        elif field_name == 'dietary_habits':
+            display_value = get_dietary_habits_display(field_value)
+        elif field_name in ['suicidal_thoughts', 'family_history_of_mental_illness']:
+            display_value = get_yes_no_display(field_value)
+        else:
+            display_value = field_value
+
         html_content += f"""
             <div class="data-item">
                 <div class="label">{label}:</div>
-                <div class="value">{field_value}</div>
+                <div class="value">{display_value}</div>
             </div>
         """
 
@@ -707,7 +769,7 @@ def history_view(request):
                     <div class="submission-data">
                         <div class="data-field">
                             <div class="field-label">Jenis Kelamin</div>
-                            <div class="field-value">{'Laki-laki' if submission.gender == '1' else 'Perempuan'}</div>
+                            <div class="field-value">{get_gender_display(submission.gender)}</div>
                         </div>
                         <div class="data-field">
                             <div class="field-label">Usia</div>
@@ -715,25 +777,25 @@ def history_view(request):
                         </div>
                         <div class="data-field">
                             <div class="field-label">Tekanan Kerja</div>
-                            <div class="field-value">{submission.work_pressure}</div>
+                            <div class="field-value">{get_pressure_display(submission.work_pressure)}</div>
                         </div>
                         <div class="data-field">
                             <div class="field-label">Kepuasan Kerja</div>
-                            <div class="field-value">{submission.job_satisfaction}</div>
+                            <div class="field-value">{get_pressure_display(submission.job_satisfaction)}</div>
                         </div>
                         <div class="data-field">
                             <div class="field-label">Stres Keuangan</div>
-                            <div class="field-value">{submission.financial_stress}</div>
+                            <div class="field-value">{get_pressure_display(submission.financial_stress)}</div>
                         </div>
                         <div class="data-field">
                             <div class="field-label">Durasi Tidur</div>
-                            <div class="field-value">{submission.sleep_duration}</div>
+                            <div class="field-value">{get_sleep_duration_display(submission.sleep_duration)}</div>
                         </div>
                         <div class="data-field">
                             <div class="field-label">Jam Kerja</div>
                             <div class="field-value">{submission.work_hours}</div>
                         </div>
-                        <div class="data-field" style="background-color: {'#f8d7da' if submission.prediction_result == 'Positive' else '#d4edda' if submission.prediction_result == 'Negative' else '#fff3cd'};">
+                        <div class="data-field" style="background-color: {'#f8d7da' if submission.prediction_result == 'Positif' else '#d4edda' if submission.prediction_result == 'Negatif' else '#fff3cd'};">
                             <div class="field-label">🧠 Hasil Prediksi</div>
                             <div class="field-value">
                                 <strong>{submission.prediction_result or 'Tidak Tersedia'}</strong>
@@ -744,7 +806,7 @@ def history_view(request):
                             <div class="field-label">📊 Skor Kemiripan</div>
                             <div class="field-value">
                                 <strong>{f'{submission.similarity_score:.1f}%' if submission.similarity_score else 'Tidak Tersedia'}</strong>
-                                {f' (Case #{submission.similar_case_id})' if submission.similar_case_id else ''}
+                                {f' (Kasus #{submission.similar_case_id})' if submission.similar_case_id else ''}
                             </div>
                         </div>
                         """ + (f"""
@@ -964,7 +1026,7 @@ def admin_dashboard(request):
     if recent_submissions:
         for submission in recent_submissions:
             local_time = timezone.localtime(submission.submitted_at)
-            gender_display = 'Male' if submission.gender == '1' else 'Female'
+            gender_display = get_gender_display(submission.gender)
             html_content += f"""
                 <div class="submission-item">
                     <strong>#{submission.id}</strong> - {gender_display}, Usia {submission.age}
@@ -1086,10 +1148,10 @@ def admin_all_submissions(request):
         html_content += f"""
                     <tr>
                         <td>#{submission.id}</td>
-                        <td>{'Male' if submission.gender == '1' else 'Female'}</td>
+                        <td>{get_gender_display(submission.gender)}</td>
                         <td>{submission.age}</td>
-                        <td>{submission.work_pressure}</td>
-                        <td>{submission.job_satisfaction}</td>
+                        <td>{get_pressure_display(submission.work_pressure)}</td>
+                        <td>{get_pressure_display(submission.job_satisfaction)}</td>
                         <td style="color: {'#dc3545' if submission.prediction_result == 'Positive' else '#28a745' if submission.prediction_result == 'Negative' else '#6c757d'};">
                             {submission.prediction_result or 'N/A'}
                             {f' ({submission.prediction_probability:.0f}%)' if submission.prediction_probability else ''}
