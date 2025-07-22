@@ -5,6 +5,7 @@ from django.template import loader
 from .models import FormSubmission
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
+from datetime import datetime
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -26,6 +27,39 @@ def is_expert(user):
 # Helper function to check if user has admin-level access (admin or expert)
 def has_admin_access(user):
     return is_admin(user) or is_expert(user)
+
+# Data transformation helper function
+def transform_form_data_for_model(form_data):
+    """
+    Transform form data from user input format to the format expected by the ML model
+
+    Input format (from user):
+    {'gender': '1', 'age': 20, 'work_pressure': '2', ...}
+
+    Output format (for model):
+    {'age': 20, 'work_pressure': 2, ..., 'gender_Female': 0, 'gender_Male': 1}
+    """
+    # Convert gender to the format expected by the model
+    gender_value = int(form_data['gender'])
+    gender_male = 1 if gender_value == 1 else 0
+    gender_female = 1 if gender_value == 0 else 0
+
+    # Create the transformed data dictionary
+    transformed_data = {
+        'age': int(form_data['age']),
+        'work_pressure': int(form_data['work_pressure']),
+        'job_satisfaction': int(form_data['job_satisfaction']),
+        'financial_stress': int(form_data['financial_stress']),
+        'sleep_duration': int(form_data['sleep_duration']),
+        'dietary_habits': int(form_data['dietary_habits']),
+        'suicidal_thoughts': int(form_data['suicidal_thoughts']),
+        'work_hours': int(form_data['work_hours']),
+        'family_history_of_mental_illness': int(form_data['family_history_of_mental_illness']),
+        'gender_Female': gender_female,
+        'gender_Male': gender_male
+    }
+
+    return transformed_data
 
 # Display helper functions to convert database values to human-readable text
 def get_gender_display(value):
@@ -78,7 +112,7 @@ def get_yes_no_display(value):
 def load_depression_model():
     """Load the depression prediction model"""
     try:
-        model_path = os.path.join(settings.BASE_DIR, 'depression_prediction_model.joblib')
+        model_path = os.path.join(settings.BASE_DIR, 'svm_model.joblib')
         model = joblib.load(model_path)
         return model
     except Exception as e:
@@ -100,20 +134,20 @@ def predict_depression(form_data):
                 'message': 'Model could not be loaded'
             }
 
-        # Prepare the input data as a pandas DataFrame with proper column names
-        # The model expects specific lowercase column names
-        input_data = pd.DataFrame({
-            'gender': [int(form_data['gender'])],
-            'age': [int(form_data['age'])],
-            'work_pressure': [int(form_data['work_pressure'])],
-            'job_satisfaction': [int(form_data['job_satisfaction'])],
-            'financial_stress': [int(form_data['financial_stress'])],
-            'sleep_duration': [int(form_data['sleep_duration'])],
-            'dietary_habits': [int(form_data['dietary_habits'])],
-            'suicidal_thoughts': [int(form_data['suicidal_thoughts'])],
-            'work_hours': [int(form_data['work_hours'])],
-            'family_history_of_mental_illness': [int(form_data['family_history_of_mental_illness'])]
-        })
+        # Transform form data to the format expected by the ML model
+        transformed_data = transform_form_data_for_model(form_data)
+
+        # Create DataFrame with the transformed data
+        input_data = pd.DataFrame([transformed_data])
+
+        # Log the transformed data for debugging
+        print("\n🔄 Data Transformation for ML Model:")
+        print(f"  Original gender: {form_data['gender']} ({'Male' if int(form_data['gender']) == 1 else 'Female'})")
+        print(f"  Transformed to: gender_Male={transformed_data['gender_Male']}, gender_Female={transformed_data['gender_Female']}")
+        print("\n📊 Final DataFrame for Model:")
+        for col, val in transformed_data.items():
+            print(f"  {col}: {val}")
+        print()
 
         # Make prediction
         prediction = model.predict(input_data)[0]
@@ -164,28 +198,67 @@ def find_similar_cases(form_data):
     try:
         # Load the dataset
         dataset_path = os.path.join(settings.BASE_DIR, 'dataset_processed.csv')
+        if not os.path.exists(dataset_path):
+            return {
+                'success': False,
+                'error': 'Dataset file not found',
+                'message': 'File dataset tidak ditemukan'
+            }
+
         df = pd.read_csv(dataset_path)
+        print(f"📊 Dataset loaded: {len(df)} rows, columns: {list(df.columns)}")
 
-        # Prepare user input vector (excluding depression column)
-        user_vector = np.array([[
-            int(form_data['gender']),
-            int(form_data['age']),
-            int(form_data['work_pressure']),
-            int(form_data['job_satisfaction']),
-            int(form_data['sleep_duration']),
-            int(form_data['dietary_habits']),
-            int(form_data['suicidal_thoughts']),
-            int(form_data['work_hours']),
-            int(form_data['financial_stress']),
-            int(form_data['family_history_of_mental_illness'])
-        ]])
+        # Transform user data to match the format expected by the model
+        transformed_data = transform_form_data_for_model(form_data)
 
-        # Prepare dataset vectors (excluding depression column)
-        feature_columns = ['gender', 'age', 'work_pressure', 'job_satisfaction',
-                          'sleep_duration', 'dietary_habits', 'suicidal_thoughts',
-                          'work_hours', 'financial_stress', 'family_history_of_mental_illness']
+        # Prepare user input vector (excluding depression column if it exists)
+        # Use the same order as the ML model expects
+        user_features = [
+            transformed_data['age'],
+            transformed_data['work_pressure'],
+            transformed_data['job_satisfaction'],
+            transformed_data['financial_stress'],
+            transformed_data['sleep_duration'],
+            transformed_data['dietary_habits'],
+            transformed_data['suicidal_thoughts'],
+            transformed_data['work_hours'],
+            transformed_data['family_history_of_mental_illness'],
+            transformed_data['gender_Female'],
+            transformed_data['gender_Male']
+        ]
+
+        user_vector = np.array([user_features])
+        print(f"🔍 User vector shape: {user_vector.shape}")
+        print(f"🔍 User features: {user_features}")
+
+        # Check if dataset has the new format (gender_Male, gender_Female) or old format (gender)
+        if 'gender_Male' in df.columns and 'gender_Female' in df.columns:
+            # New format - use gender_Male and gender_Female columns
+            feature_columns = ['age', 'work_pressure', 'job_satisfaction', 'financial_stress',
+                              'sleep_duration', 'dietary_habits', 'suicidal_thoughts',
+                              'work_hours', 'family_history_of_mental_illness',
+                              'gender_Female', 'gender_Male']
+        else:
+            # Old format - convert gender column to gender_Male and gender_Female
+            print("📝 Converting old dataset format to new format...")
+            df['gender_Male'] = (df['gender'] == 1).astype(int)
+            df['gender_Female'] = (df['gender'] == 0).astype(int)
+            feature_columns = ['age', 'work_pressure', 'job_satisfaction', 'financial_stress',
+                              'sleep_duration', 'dietary_habits', 'suicidal_thoughts',
+                              'work_hours', 'family_history_of_mental_illness',
+                              'gender_Female', 'gender_Male']
+
+        # Ensure all required columns exist
+        missing_columns = [col for col in feature_columns if col not in df.columns]
+        if missing_columns:
+            return {
+                'success': False,
+                'error': f'Missing columns in dataset: {missing_columns}',
+                'message': f'Kolom dataset tidak lengkap: {missing_columns}'
+            }
 
         dataset_vectors = df[feature_columns].values
+        print(f"📊 Dataset vectors shape: {dataset_vectors.shape}")
 
         # Calculate cosine similarity
         similarities = cosine_similarity(user_vector, dataset_vectors)[0]
@@ -203,9 +276,16 @@ def find_similar_cases(form_data):
             match_data = df.iloc[idx]
             similarity_score = similarities[idx]
 
+            # Handle gender display for both old and new formats
+            if 'gender' in match_data:
+                gender_display = get_gender_display(match_data['gender'])
+            else:
+                # Use gender_Male and gender_Female columns
+                gender_display = 'Laki-laki' if match_data['gender_Male'] == 1 else 'Perempuan'
+
             top_matches.append({
                 'similarity': float(similarity_score * 100),  # Convert to percentage and ensure float
-                'gender': get_gender_display(match_data['gender']),
+                'gender': gender_display,
                 'age': int(match_data['age']),  # Convert to regular int
                 'work_pressure': get_pressure_display(match_data['work_pressure']),
                 'job_satisfaction': get_pressure_display(match_data['job_satisfaction']),
@@ -218,12 +298,21 @@ def find_similar_cases(form_data):
                 'depression': 'Positif' if match_data['depression'] == 1 else 'Negatif'
             })
 
+        # Handle gender display for best match
+        if 'gender' in best_match_row:
+            best_match_gender = get_gender_display(best_match_row['gender'])
+        else:
+            # Use gender_Male and gender_Female columns
+            best_match_gender = 'Laki-laki' if best_match_row['gender_Male'] == 1 else 'Perempuan'
+
         return {
             'success': True,
             'best_similarity': float(best_similarity * 100),  # Convert to percentage and ensure float
             'best_match_idx': int(best_match_idx),  # Store the index
+            'best_similarity_score': float(best_similarity * 100),  # For API compatibility
+            'best_match_index': int(best_match_idx),  # For API compatibility
             'best_match': {
-                'gender': get_gender_display(best_match_row['gender']),
+                'gender': best_match_gender,
                 'age': int(best_match_row['age']),  # Convert to regular int
                 'work_pressure': get_pressure_display(best_match_row['work_pressure']),
                 'job_satisfaction': get_pressure_display(best_match_row['job_satisfaction']),
@@ -240,7 +329,9 @@ def find_similar_cases(form_data):
         }
 
     except Exception as e:
-        print(f"Similarity calculation error: {e}")
+        print(f"❌ Similarity calculation error: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             'success': False,
             'error': str(e),
@@ -251,10 +342,40 @@ def my_view(request):
     template = loader.get_template("my_template.html")
 
     if request.method == 'POST':
+        # Log the raw request data
+        print("=" * 60)
+        print("🔍 FORM SUBMISSION REQUEST LOG")
+        print("=" * 60)
+        print(f"📅 Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🌐 Method: {request.method}")
+        print(f"📍 Path: {request.path}")
+        print(f"🖥️  User Agent: {request.META.get('HTTP_USER_AGENT', 'Unknown')}")
+        print(f"📡 Remote IP: {request.META.get('REMOTE_ADDR', 'Unknown')}")
+
+        print("\n📦 Raw POST Data:")
+        for key, value in request.POST.items():
+            print(f"  {key}: {value}")
+
         form = MyForm(request.POST)
         if form.is_valid():
-            # Save form data to database
+            print("\n✅ Form Validation: PASSED")
+            print("\n🧹 Cleaned Form Data:")
+            for key, value in form.cleaned_data.items():
+                print(f"  {key}: {value}")
+        else:
+            print("\n❌ Form Validation: FAILED")
+            print("\n🚨 Form Errors:")
+            for field, errors in form.errors.items():
+                print(f"  {field}: {errors}")
+            print("=" * 60)
+            return render(request, 'my_template.html', {'form': form})
+
+        print("=" * 60)
+
+        if form.is_valid():
+            # Save form data to database with user information
             submission = FormSubmission.objects.create(
+                user=request.user if request.user.is_authenticated else None,
                 gender=form.cleaned_data['gender'],
                 age=form.cleaned_data['age'],
                 work_pressure=form.cleaned_data['work_pressure'],
@@ -271,7 +392,19 @@ def my_view(request):
             prediction_result = predict_depression(form.cleaned_data)
 
             # Perform cosine similarity analysis
-            similarity_result = find_similar_cases(form.cleaned_data)
+            print("\n🔍 Starting similarity analysis...")
+            try:
+                similarity_result = find_similar_cases(form.cleaned_data)
+                print(f"✅ Similarity analysis completed: {similarity_result.get('success', False)}")
+                if not similarity_result.get('success', False):
+                    print(f"❌ Similarity analysis failed: {similarity_result.get('message', 'Unknown error')}")
+            except Exception as e:
+                print(f"❌ Similarity analysis exception: {str(e)}")
+                similarity_result = {
+                    'success': False,
+                    'error': str(e),
+                    'message': 'Terjadi kesalahan dalam analisis kemiripan'
+                }
 
             # Update the submission with prediction results
             submission.prediction_result = prediction_result.get('prediction', 'Unknown')
@@ -321,6 +454,8 @@ def results_view(request):
     prediction_result = request.session.get('prediction_result', {})
     similarity_result = request.session.get('similarity_result', {})
 
+
+    print(form_data)
     if not form_data:
         return HttpResponse("<h1>Data tidak ditemukan</h1><p><a href='/pred/'>Kembali ke formulir</a></p>")
 
@@ -639,10 +774,9 @@ def history_view(request):
         page_title = "Semua Pengiriman Formulir (Tampilan Ahli)"
         user_info = f"Ahli: {request.user.get_full_name() or request.user.username}"
     else:
-        # Regular users see only their own submissions (if we implement user-specific submissions)
-        # For now, regular users see all submissions but with limited info
-        submissions = FormSubmission.objects.all()
-        page_title = "Riwayat Pengiriman Formulir"
+        # Regular users see only their own submissions
+        submissions = FormSubmission.objects.filter(user=request.user)
+        page_title = "Riwayat Pengiriman Formulir Saya"
         user_info = f"Selamat datang, {request.user.get_full_name() or request.user.username}!"
 
     # Create styled HTML to display the history
