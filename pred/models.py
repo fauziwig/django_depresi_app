@@ -1,8 +1,13 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 # Create your models here.
 class FormSubmission(models.Model):
+    # User who submitted the form (for privacy control)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="User", null=True, blank=True, related_name='form_submissions')
+
+    # Form data fields
     gender = models.CharField(max_length=10, verbose_name="Gender")
     age = models.IntegerField(verbose_name="Age")
     work_pressure = models.CharField(max_length=10, verbose_name="Work Pressure")
