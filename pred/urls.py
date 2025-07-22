@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
 
@@ -19,4 +19,7 @@ urlpatterns = [
 
     # Expert URLs
     path("expert/reuse-data/<int:submission_id>/", views.expert_reuse_data, name="expert_reuse_data"),
+
+    # API URLs
+    path("api/", include("pred.api_urls")),
 ]
