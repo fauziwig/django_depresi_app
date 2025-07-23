@@ -1,143 +1,249 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Sistem Prediksi Depresi</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .register-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-        }
-        input[type="text"], input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 700;
             margin-bottom: 10px;
         }
-        button:hover {
-            background-color: #218838;
+
+        .header p {
+            opacity: 0.9;
         }
-        .link {
+
+        .form-section {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 210, 211, 0.4);
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 210, 211, 0.6);
+        }
+        .links {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
         }
-        .link a {
-            color: #007bff;
+
+        .link {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 8px 16px;
+            color: #667eea;
             text-decoration: none;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
+
+        .link:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+        }
+
         .error {
-            color: red;
-            font-size: 14px;
+            color: #dc3545;
+            font-size: 0.85em;
             margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
+
+        .error::before {
+            content: '⚠️';
+            font-size: 0.9em;
+        }
+
         .success {
-            color: green;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #d4edda;
+            color: #28a745;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #d4edda;
             border: 1px solid #c3e6cb;
-            border-radius: 4px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .register-container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .form-section {
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="register-container">
-        <h2>Daftar Akun Baru</h2>
-        
-        {% if messages %}
-            {% for message in messages %}
-                <div class="success">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="username">Username:</label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <div class="error">{{ form.username.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="first_name">Nama Depan:</label>
-                {{ form.first_name }}
-                {% if form.first_name.errors %}
-                    <div class="error">{{ form.first_name.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="last_name">Nama Belakang:</label>
-                {{ form.last_name }}
-                {% if form.last_name.errors %}
-                    <div class="error">{{ form.last_name.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Email:</label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                    <div class="error">{{ form.email.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="password1">Password:</label>
-                {{ form.password1 }}
-                {% if form.password1.errors %}
-                    <div class="error">{{ form.password1.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="password2">Konfirmasi Password:</label>
-                {{ form.password2 }}
-                {% if form.password2.errors %}
-                    <div class="error">{{ form.password2.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <button type="submit">Daftar</button>
-        </form>
-        <div class="link">
-            <a href="/pred/login/">Sudah punya akun? Login di sini</a>
+        <!-- Header Section -->
+        <div class="header">
+            <h1>📝 Daftar Akun</h1>
+            <p>Buat akun untuk menyimpan riwayat analisis</p>
         </div>
-        <div class="link">
-            <a href="/pred/">← Kembali ke Form</a>
+
+        <div class="form-section">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="success">✅ {{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+            
+                <div class="form-group">
+                    <label for="username">👤 Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="error">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="first_name">👨 Nama Depan</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="error">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">👨‍💼 Nama Belakang</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="error">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="email">📧 Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="error">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="password1">🔒 Password</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <div class="error">{{ form.password1.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="password2">🔐 Konfirmasi Password</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <div class="error">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="submit-btn">🚀 Daftar Sekarang</button>
+            </form>
+
+            <div class="links">
+                <a href="/pred/login/" class="link">🔐 Sudah punya akun? Masuk</a>
+                <br>
+                <a href="/pred/" class="link">🔙 Kembali ke Formulir</a>
+            </div>
         </div>
     </div>
 </body>

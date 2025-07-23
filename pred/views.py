@@ -471,70 +471,277 @@ def results_view(request):
     # Create styled HTML to display the form data
     html_content = """
     <!DOCTYPE html>
-    <html>
+    <html lang="id">
     <head>
-        <title>Hasil Formulir</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Hasil Analisis Kesehatan Mental</title>
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
             body {
-                font-family: Arial, sans-serif;
-                max-width: 600px;
-                margin: 50px auto;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }
-            .results-container {
-                background-color: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .data-item {
-                margin-bottom: 15px;
-                padding: 10px;
-                background-color: #f8f9fa;
-                border-left: 4px solid #007bff;
-            }
-            .label {
-                font-weight: bold;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
                 color: #333;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
             }
-            .value {
-                color: #666;
-                margin-top: 5px;
+
+            .main-container {
+                max-width: 900px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
             }
-            .back-link {
-                display: inline-block;
-                margin-top: 20px;
-                padding: 10px 20px;
-                background-color: #007bff;
+
+            .header {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
                 color: white;
-                text-decoration: none;
-                border-radius: 4px;
+                padding: 30px;
+                text-align: center;
             }
-            .back-link:hover {
-                background-color: #0056b3;
+
+            .header h1 {
+                font-size: 2.2em;
+                font-weight: 700;
+                margin-bottom: 10px;
+            }
+
+            .header p {
+                font-size: 1.1em;
+                opacity: 0.9;
+            }
+
+            .results-content {
+                padding: 40px;
+            }
+
+            .section {
+                margin-bottom: 40px;
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 25px;
+                border-left: 5px solid #4facfe;
+            }
+
+            .section-title {
+                font-size: 1.4em;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
             .prediction-container {
-                margin: 30px 0;
-                padding: 25px;
-                border-radius: 8px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 30px;
                 text-align: center;
-                font-size: 1.1em;
+                margin-bottom: 30px;
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
             }
+
             .prediction-positive {
-                background-color: #f8d7da;
-                border: 2px solid #dc3545;
-                color: #721c24;
+                background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+                box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
             }
+
             .prediction-negative {
-                background-color: #d4edda;
-                border: 2px solid #28a745;
-                color: #155724;
+                background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+                box-shadow: 0 10px 30px rgba(0, 210, 211, 0.3);
             }
-            .prediction-error {
-                background-color: #fff3cd;
-                border: 2px solid #ffc107;
-                color: #856404;
+
+            .prediction-title {
+                font-size: 1.5em;
+                font-weight: 700;
+                margin-bottom: 15px;
+            }
+
+            .prediction-message {
+                font-size: 1.1em;
+                margin-bottom: 10px;
+                line-height: 1.5;
+            }
+
+            .prediction-probability {
+                font-size: 1.3em;
+                font-weight: 600;
+                margin-top: 15px;
+                padding: 10px 20px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 25px;
+                display: inline-block;
+            }
+
+            .similarity-container {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 25px;
+                margin-bottom: 30px;
+                border-left: 5px solid #17a2b8;
+            }
+
+            .similarity-title {
+                font-size: 1.4em;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .best-match {
+                background: white;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .similarity-score {
+                font-size: 1.2em;
+                font-weight: 600;
+                color: #17a2b8;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+
+            .match-details {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin-top: 15px;
+            }
+
+            .match-field {
+                background: #f8f9fa;
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid #e9ecef;
+            }
+
+            .field-name {
+                font-weight: 600;
+                font-size: 0.9em;
+                color: #6c757d;
+                margin-bottom: 5px;
+            }
+
+            .field-value {
+                color: #2c3e50;
+                font-weight: 500;
+            }
+
+            .data-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
+            }
+
+            .data-item {
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                border-left: 4px solid #4facfe;
+            }
+
+            .data-label {
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 8px;
+                font-size: 0.95em;
+            }
+
+            .data-value {
+                color: #495057;
+                font-size: 1.05em;
+            }
+
+            .action-buttons {
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 30px;
+                border-top: 1px solid #e9ecef;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 12px 30px;
+                margin: 0 10px;
+                border-radius: 25px;
+                text-decoration: none;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                border: none;
+                cursor: pointer;
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            }
+
+            .btn-secondary {
+                background: #6c757d;
+                color: white;
+            }
+
+            .btn-secondary:hover {
+                background: #5a6268;
+                transform: translateY(-2px);
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    padding: 10px;
+                }
+
+                .main-container {
+                    border-radius: 15px;
+                }
+
+                .header {
+                    padding: 20px;
+                }
+
+                .header h1 {
+                    font-size: 1.8em;
+                }
+
+                .results-content {
+                    padding: 20px;
+                }
+
+                .match-details {
+                    grid-template-columns: 1fr;
+                }
+
+                .data-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .btn {
+                    display: block;
+                    margin: 10px 0;
+                }
             }
             .prediction-title {
                 font-size: 1.3em;
@@ -608,24 +815,29 @@ def results_view(request):
         </style>
     </head>
     <body>
-        <div class="results-container">
-            <h1>Hasil Pengiriman Formulir</h1>
-
-            <!-- Prediction Results Section -->
-            """ + (f"""
-            <div class="prediction-container prediction-{prediction_result.get('prediction', 'error').lower()}">
-                <div class="prediction-title">
-                    🧠 Hasil Prediksi Depresi
-                </div>
-                <div class="prediction-message">
-                    <strong>Prediksi:</strong> {prediction_result.get('prediction', 'Tidak Diketahui')}
-                </div>
-                <div class="prediction-message">
-                    {prediction_result.get('message', 'No prediction available')}
-                </div>
-                {f'<div class="prediction-probability">Kepercayaan: {prediction_result.get("probability", 0):.1f}%</div>' if prediction_result.get('probability', 0) > 0 else ''}
+        <div class="main-container">
+            <!-- Header Section -->
+            <div class="header">
+                <h1>🎯 Hasil Analisis Kesehatan Mental</h1>
+                <p>Laporan Komprehensif Berdasarkan AI dan Analisis Data</p>
             </div>
-            """ if prediction_result else "") + """
+
+            <div class="results-content">
+                <!-- Prediction Results Section -->
+                """ + (f"""
+                <div class="prediction-container prediction-{prediction_result.get('prediction', 'error').lower()}">
+                    <div class="prediction-title">
+                        🧠 Hasil Prediksi Depresi
+                    </div>
+                    <div class="prediction-message">
+                        <strong>Prediksi:</strong> {prediction_result.get('prediction', 'Tidak Diketahui')}
+                    </div>
+                    <div class="prediction-message">
+                        {prediction_result.get('message', 'Tidak ada prediksi tersedia')}
+                    </div>
+                    {f'<div class="prediction-probability">Tingkat Kepercayaan: {prediction_result.get("probability", 0):.1f}%</div>' if prediction_result.get('probability', 0) > 0 else ''}
+                </div>
+                """ if prediction_result else "") + """
 
             <!-- Similarity Analysis Section -->
             """ + (f"""
@@ -682,24 +894,31 @@ def results_view(request):
                 </div>
             </div>
             """ if similarity_result else "") + """
+
+                <!-- Form Data Summary Section -->
+                <div class="section">
+                    <div class="section-title">
+                        📋 Ringkasan Data Anda
+                    </div>
+                    <div class="data-grid">
     """
 
-    # Field labels mapping
+    # Field labels mapping with icons
     field_labels = {
-        'gender': 'Jenis Kelamin',
-        'age': 'Usia',
-        'work_pressure': 'Tekanan Kerja',
-        'job_satisfaction': 'Kepuasan Kerja',
-        'financial_stress': 'Stres Keuangan',
-        'sleep_duration': 'Durasi Tidur',
-        'dietary_habits': 'Kebiasaan Makan',
-        'suicidal_thoughts': 'Pikiran Bunuh Diri',
-        'work_hours': 'Jam Kerja',
-        'family_history_of_mental_illness': 'Riwayat Keluarga Penyakit Mental'
+        'gender': ('👤', 'Jenis Kelamin'),
+        'age': ('🎂', 'Usia'),
+        'work_pressure': ('💼', 'Tekanan Kerja'),
+        'job_satisfaction': ('😊', 'Kepuasan Kerja'),
+        'financial_stress': ('💰', 'Stres Keuangan'),
+        'sleep_duration': ('😴', 'Durasi Tidur'),
+        'dietary_habits': ('🍽️', 'Kebiasaan Makan'),
+        'suicidal_thoughts': ('🧠', 'Pikiran Bunuh Diri'),
+        'work_hours': ('⏰', 'Jam Kerja'),
+        'family_history_of_mental_illness': ('👨‍👩‍👧‍👦', 'Riwayat Keluarga')
     }
 
     for field_name, field_value in form_data.items():
-        label = field_labels.get(field_name, field_name.title())
+        icon, label = field_labels.get(field_name, ('📝', field_name.title()))
 
         # Convert database values to display values
         if field_name == 'gender':
@@ -716,38 +935,54 @@ def results_view(request):
             display_value = field_value
 
         html_content += f"""
-            <div class="data-item">
-                <div class="label">{label}:</div>
-                <div class="value">{display_value}</div>
-            </div>
+                        <div class="data-item">
+                            <div class="data-label">{icon} {label}</div>
+                            <div class="data-value">{display_value}</div>
+                        </div>
         """
+
+    html_content += """
+                    </div>
+                </div>
+    """
 
     # Add submission time if available
     if submission_time:
         html_content += f"""
-            <div style="margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; text-align: center;">
-                <strong>Submitted at:</strong> {submission_time.strftime('%Y-%m-%d %H:%M:%S')} WIB
-            </div>
+                <div class="section">
+                    <div class="section-title">⏰ Waktu Pengiriman</div>
+                    <div style="text-align: center; font-size: 1.1em; color: #495057;">
+                        {submission_time.strftime('%d %B %Y, %H:%M:%S')} WIB
+                    </div>
+                </div>
         """
 
     # Add navigation links based on user authentication
+    html_content += """
+                <div class="action-buttons">
+    """
+
     if request.user.is_authenticated:
         html_content += f"""
-            <div style="margin-top: 20px;">
-                <a href="/pred/" class="back-link">Kirim Formulir Lain</a>
-                <a href="/pred/history/" class="back-link" style="margin-left: 10px; background-color: #28a745;">Lihat Riwayat</a>
-                {f'<a href="/pred/admin/dashboard/" class="back-link" style="margin-left: 10px; background-color: #dc3545;">Dashboard Admin</a>' if is_admin(request.user) else f'<a href="/pred/admin/dashboard/" class="back-link" style="margin-left: 10px; background-color: #28a745;">Dashboard Ahli</a>' if is_expert(request.user) else ''}
-            </div>
+                    <a href="/pred/" class="btn btn-primary">🔄 Analisis Lagi</a>
+                    <a href="/pred/history/" class="btn btn-secondary">📋 Lihat Riwayat</a>
+                    {f'<a href="/pred/admin/dashboard/" class="btn btn-secondary">⚙️ Dashboard Admin</a>' if is_admin(request.user) else f'<a href="/pred/admin/dashboard/" class="btn btn-secondary">🔬 Dashboard Ahli</a>' if is_expert(request.user) else ''}
         """
     else:
         html_content += """
-            <div style="margin-top: 20px;">
-                <a href="/pred/" class="back-link">Kirim Formulir Lain</a>
-                <a href="/pred/login/" class="back-link" style="margin-left: 10px; background-color: #28a745;">Masuk untuk Lihat Riwayat</a>
-            </div>
+                    <a href="/pred/" class="btn btn-primary">🔄 Analisis Lagi</a>
+                    <a href="/pred/login/" class="btn btn-secondary">🔐 Masuk untuk Riwayat</a>
         """
 
     html_content += """
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 0.9em; border-top: 1px solid #e9ecef;">
+                <p>🔒 Hasil ini bersifat rahasia dan hanya untuk referensi awal</p>
+                <p style="margin-top: 5px;">⚠️ Konsultasikan dengan profesional kesehatan mental untuk diagnosis yang akurat</p>
+            </div>
         </div>
     </body>
     </html>
@@ -782,114 +1017,327 @@ def history_view(request):
     # Create styled HTML to display the history
     html_content = """
     <!DOCTYPE html>
-    <html>
+    <html lang="id">
     <head>
-        <title>Form Submission History</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Riwayat Formulir - Sistem Prediksi Depresi</title>
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
             body {
-                font-family: Arial, sans-serif;
-                max-width: 1000px;
-                margin: 50px auto;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                min-height: 100vh;
                 padding: 20px;
-                background-color: #f5f5f5;
             }
-            .history-container {
-                background-color: white;
+
+            .main-container {
+                max-width: 70%;
+                margin: 0 auto;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
                 padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                text-align: center;
+                position: relative;
             }
-            .submission-item {
-                margin-bottom: 20px;
-                padding: 20px;
-                background-color: #f8f9fa;
-                border-radius: 6px;
-                border-left: 4px solid #007bff;
-            }
-            .submission-header {
-                font-weight: bold;
-                color: #007bff;
+
+            .header h1 {
+                font-size: 2.2em;
+                font-weight: 700;
                 margin-bottom: 10px;
-                font-size: 18px;
             }
+
+            .header p {
+                font-size: 1.1em;
+                opacity: 0.9;
+            }
+
+            .nav-bar {
+                background: #f8f9fa;
+                padding: 15px 30px;
+                border-bottom: 1px solid #e9ecef;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 600;
+                color: #495057;
+            }
+
+            .nav-links {
+                display: flex;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .nav-link {
+                text-decoration: none;
+                padding: 8px 16px;
+                border-radius: 25px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 0.9em;
+            }
+
+            .nav-link:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .nav-link.primary { background: #6366f1; color: white; }
+            .nav-link.primary:hover { background: #4f46e5; }
+            .nav-link.success { background: #8b5cf6; color: white; }
+            .nav-link.success:hover { background: #7c3aed; }
+            .nav-link.danger { background: #a855f7; color: white; }
+            .nav-link.danger:hover { background: #9333ea; }
+
+            .content-section {
+                padding: 40px;
+            }
+            .page-title {
+                text-align: center;
+                margin-bottom: 30px;
+                color: #2c3e50;
+            }
+
+            .page-title h2 {
+                font-size: 1.8em;
+                font-weight: 600;
+                margin-bottom: 10px;
+            }
+
+            .page-title p {
+                color: #6c757d;
+                font-size: 1em;
+            }
+
+            .submissions-grid {
+                display: grid;
+                gap: 25px;
+            }
+
+            .submission-card {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 25px;
+                border-left: 5px solid #6366f1;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+            }
+
+            .submission-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            }
+
+            .submission-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #e9ecef;
+            }
+
+            .submission-id {
+                font-size: 1.2em;
+                font-weight: 600;
+                color: #6366f1;
+            }
+
+            .submission-time {
+                color: #6c757d;
+                font-size: 0.9em;
+                font-style: italic;
+            }
+
             .submission-data {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 10px;
-                margin-bottom: 10px;
+                gap: 15px;
+                margin-bottom: 20px;
             }
+
             .data-field {
-                background-color: white;
-                padding: 8px 12px;
-                border-radius: 4px;
+                background: white;
+                padding: 12px 16px;
+                border-radius: 10px;
                 border: 1px solid #e9ecef;
+                transition: all 0.3s ease;
             }
+
+            .data-field:hover {
+                border-color: #6366f1;
+                box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+            }
+
+            .field-label {
+                font-weight: 600;
+                color: #2c3e50;
+                font-size: 0.85em;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 5px;
+            }
+
+            .field-value {
+                color: #495057;
+                font-size: 1em;
+                font-weight: 500;
+            }
+
+            .prediction-result {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+
+            .prediction-result.positive {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            }
+
+            .prediction-result.negative {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            }
+
             .reuse-btn {
-                background-color: #28a745;
+                background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
+                padding: 10px 20px;
+                border-radius: 25px;
                 cursor: pointer;
                 font-size: 0.9em;
-                font-weight: bold;
+                font-weight: 600;
                 text-decoration: none;
-                display: inline-block;
-                transition: background-color 0.3s;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                transition: all 0.3s ease;
             }
+
             .reuse-btn:hover {
-                background-color: #218838;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
                 color: white;
                 text-decoration: none;
             }
-            .field-label {
-                font-weight: bold;
-                color: #333;
-                font-size: 12px;
-                text-transform: uppercase;
-            }
-            .field-value {
-                color: #666;
-                margin-top: 2px;
-            }
-            .submission-time {
-                color: #6c757d;
-                font-size: 14px;
-                font-style: italic;
-            }
-            .back-link {
-                display: inline-block;
-                margin-bottom: 20px;
-                padding: 10px 20px;
-                background-color: #007bff;
-                color: white;
-                text-decoration: none;
-                border-radius: 4px;
-            }
-            .back-link:hover {
-                background-color: #0056b3;
-            }
+
             .no-data {
                 text-align: center;
                 color: #6c757d;
                 font-style: italic;
-                padding: 40px;
+                padding: 60px 40px;
+                background: #f8f9fa;
+                border-radius: 15px;
+                margin: 40px 0;
+            }
+
+            .no-data h3 {
+                font-size: 1.5em;
+                margin-bottom: 15px;
+                color: #495057;
+            }
+
+            .no-data p {
+                font-size: 1.1em;
+                margin-bottom: 20px;
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    padding: 10px;
+                }
+
+                .main-container {
+                    border-radius: 15px;
+                }
+
+                .header {
+                    padding: 20px;
+                }
+
+                .header h1 {
+                    font-size: 1.8em;
+                }
+
+                .nav-bar {
+                    padding: 15px 20px;
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 10px;
+                }
+
+                .nav-links {
+                    justify-content: center;
+                }
+
+                .content-section {
+                    padding: 30px 20px;
+                }
+
+                .submission-data {
+                    grid-template-columns: 1fr;
+                }
             }
         </style>
     </head>
     <body>
-        <div class="history-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div>
-                    <a href="/pred/" class="back-link">← Kembali ke Formulir</a>
-                    """ + (f'<a href="/pred/admin/dashboard/" style="margin-left: 15px; color: #dc3545; text-decoration: none;">⚙️ Admin Dashboard</a>' if is_admin(request.user) else f'<a href="/pred/admin/dashboard/" style="margin-left: 15px; color: #28a745; text-decoration: none;">🔬 Expert Dashboard</a>' if is_expert(request.user) else '') + f"""
+        <div class="main-container">
+            <!-- Header Section -->
+            <div class="header">
+                <h1>📋 {page_title}</h1>
+                <p>Riwayat dan Analisis Data Formulir</p>
+            </div>
+
+            <!-- Navigation Bar -->
+            <div class="nav-bar">
+                <div class="user-info">
+                    <span>👤</span>
+                    <span>{user_info}</span>
                 </div>
-                <div style="text-align: right;">
-                    <span style="color: #666;">{user_info}</span>
-                    <a href="/pred/logout/" style="margin-left: 15px; color: #dc3545; text-decoration: none;">Keluar</a>
+                <div class="nav-links">
+                    <a href="/pred/" class="nav-link primary">🏠 Formulir Utama</a>
+                    """ + (f'<a href="/pred/admin/dashboard/" class="nav-link success">⚙️ Dashboard Admin</a>' if is_admin(request.user) else f'<a href="/pred/admin/dashboard/" class="nav-link success">🔬 Dashboard Ahli</a>' if is_expert(request.user) else '') + f"""
+                    <a href="/pred/logout/" class="nav-link danger">🚪 Keluar</a>
                 </div>
             </div>
-            <h1>{page_title}</h1>
+
+            <!-- Content Section -->
+            <div class="content-section">
+                <div class="page-title">
+                    <h2>Daftar Pengiriman Formulir</h2>
+                    <p>Lihat dan kelola riwayat pengiriman formulir Anda</p>
+                </div>
+
+                <div class="submissions-grid">
     """
 
     if submissions.exists():
@@ -897,75 +1345,110 @@ def history_view(request):
             # Convert UTC time to local time using Django's timezone.localtime
             local_time = timezone.localtime(submission.submitted_at)
 
-            html_content += f"""
-                <div class="submission-item">
-                    <div class="submission-header">Submission #{submission.id}</div>
-                    <div class="submission-data">
-                        <div class="data-field">
-                            <div class="field-label">Jenis Kelamin</div>
-                            <div class="field-value">{get_gender_display(submission.gender)}</div>
-                        </div>
-                        <div class="data-field">
-                            <div class="field-label">Usia</div>
-                            <div class="field-value">{submission.age}</div>
-                        </div>
-                        <div class="data-field">
-                            <div class="field-label">Tekanan Kerja</div>
-                            <div class="field-value">{get_pressure_display(submission.work_pressure)}</div>
-                        </div>
-                        <div class="data-field">
-                            <div class="field-label">Kepuasan Kerja</div>
-                            <div class="field-value">{get_pressure_display(submission.job_satisfaction)}</div>
-                        </div>
-                        <div class="data-field">
-                            <div class="field-label">Stres Keuangan</div>
-                            <div class="field-value">{get_pressure_display(submission.financial_stress)}</div>
-                        </div>
-                        <div class="data-field">
-                            <div class="field-label">Durasi Tidur</div>
-                            <div class="field-value">{get_sleep_duration_display(submission.sleep_duration)}</div>
-                        </div>
-                        <div class="data-field">
-                            <div class="field-label">Jam Kerja</div>
-                            <div class="field-value">{submission.work_hours}</div>
-                        </div>
-                        <div class="data-field" style="background-color: {'#f8d7da' if submission.prediction_result == 'Positif' else '#d4edda' if submission.prediction_result == 'Negatif' else '#fff3cd'};">
-                            <div class="field-label">🧠 Hasil Prediksi</div>
-                            <div class="field-value">
-                                <strong>{submission.prediction_result or 'Tidak Tersedia'}</strong>
-                                {f' ({submission.prediction_probability:.1f}% kepercayaan)' if submission.prediction_probability else ''}
-                            </div>
-                        </div>
-                        <div class="data-field" style="background-color: #e3f2fd;">
-                            <div class="field-label">📊 Skor Kemiripan</div>
-                            <div class="field-value">
-                                <strong>{f'{submission.similarity_score:.1f}%' if submission.similarity_score else 'Tidak Tersedia'}</strong>
-                                {f' (Kasus #{submission.similar_case_id})' if submission.similar_case_id else ''}
-                            </div>
-                        </div>
-                        """ + (f"""
-                        <div class="data-field" style="background-color: {'#d4edda' if submission.is_reused_in_dataset else '#fff3cd'}; text-align: center;">
-                            {f'''
-                            <div style="color: #155724; font-weight: bold;">
-                                ✅ Ditambahkan ke Dataset
-                                <br><small>By {submission.reused_by.username if submission.reused_by else "Unknown"} on {submission.reused_at.strftime("%Y-%m-%d %H:%M") if submission.reused_at else "Unknown date"}</small>
-                            </div>
-                            ''' if submission.is_reused_in_dataset else f'''
-                            <a href="/pred/expert/reuse-data/{submission.id}/" class="reuse-btn" onclick="return confirm('Apakah Anda yakin ingin menambahkan data pengiriman ini ke dataset? Tindakan ini tidak dapat dibatalkan.')">
-                                🔄 Reuse Data
-                            </a>
-                            '''}
-                        </div>
-                        """ if is_expert(request.user) else "") + f"""
+            # Determine prediction result class
+            prediction_class = ""
+            if submission.prediction_result == 'Positif':
+                prediction_class = "positive"
+            elif submission.prediction_result == 'Negatif':
+                prediction_class = "negative"
 
+            html_content += f"""
+                    <div class="submission-card">
+                        <div class="submission-header">
+                            <div class="submission-id">📋 Submission #{submission.id}</div>
+                            <div class="submission-time">📅 {local_time.strftime('%d %B %Y, %H:%M')} WIB</div>
+                        </div>
+
+                        <!-- Prediction Result -->
+                        {f'<div class="prediction-result {prediction_class}"><strong>🧠 Hasil Prediksi: {submission.prediction_result}</strong>{f" ({submission.prediction_probability:.1f}%)" if submission.prediction_probability else ""}</div>' if submission.prediction_result else ''}
+
+                            <div class="data-field">
+                                <div class="field-label">👤 Jenis Kelamin</div>
+                                <div class="field-value">{get_gender_display(submission.gender)}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">🎂 Usia</div>
+                                <div class="field-value">{submission.age} tahun</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">💼 Tekanan Kerja</div>
+                                <div class="field-value">{get_pressure_display(submission.work_pressure)}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">😊 Kepuasan Kerja</div>
+                                <div class="field-value">{get_pressure_display(submission.job_satisfaction)}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">💰 Stres Keuangan</div>
+                                <div class="field-value">{get_pressure_display(submission.financial_stress)}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">😴 Durasi Tidur</div>
+                                <div class="field-value">{get_sleep_duration_display(submission.sleep_duration)}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">⏰ Jam Kerja</div>
+                                <div class="field-value">{submission.work_hours} jam/hari</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">🍽️ Kebiasaan Makan</div>
+                                <div class="field-value">{get_dietary_habits_display(submission.dietary_habits)}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">🧠 Pikiran Bunuh Diri</div>
+                                <div class="field-value">{get_yes_no_display(submission.suicidal_thoughts)}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">👨‍👩‍👧‍👦 Riwayat Keluarga</div>
+                                <div class="field-value">{get_yes_no_display(submission.family_history_of_mental_illness)}</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="submission-time">Submitted: {local_time.strftime('%Y-%m-%d %H:%M:%S')} WIB</div>
-                </div>
             """
+
+            # Add similarity score if available
+            if submission.similarity_score:
+                html_content += f"""
+                    <div style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 10px;">
+                        <strong>📊 Skor Kemiripan:</strong> {submission.similarity_score:.1f}% (Kasus #{submission.similar_case_id})
+                    </div>
+                """
+
+            # Add action buttons for experts
+            if is_expert(request.user):
+                if submission.is_reused_in_dataset:
+                    html_content += f"""
+                    <div style="margin-top: 15px; background: #d4edda; padding: 10px; border-radius: 8px; color: #155724; font-weight: bold; text-align: center;">
+                        ✅ Ditambahkan ke Dataset
+                        <br><small>Oleh {submission.reused_by.username if submission.reused_by else "Unknown"} pada {submission.reused_at.strftime("%d %B %Y, %H:%M") if submission.reused_at else "Unknown date"}</small>
+                    </div>
+                    """
+                else:
+                    html_content += f"""
+                    <div style="margin-top: 15px; text-align: center;">
+                        <a href="/pred/expert/reuse-data/{submission.id}/" class="reuse-btn" onclick="return confirm('Apakah Anda yakin ingin menambahkan data pengiriman ini ke dataset? Tindakan ini tidak dapat dibatalkan.')">
+                            🔄 Tambahkan ke Dataset
+                        </a>
+                    </div>
+                    """
     else:
-        html_content += '<div class="no-data">Tidak ada pengiriman formulir yang ditemukan.</div>'
+        html_content += """
+                <div class="no-data">
+                    <h3>📭 Belum Ada Data</h3>
+                    <p>Tidak ada pengiriman formulir yang ditemukan.</p>
+                    <a href="/pred/" class="reuse-btn">🚀 Buat Formulir Pertama</a>
+                </div>
+        """
 
     html_content += """
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 0.9em; border-top: 1px solid #e9ecef;">
+                <p>📊 Sistem Prediksi Depresi - Riwayat Data Formulir</p>
+                <p style="margin-top: 5px;">🔒 Data Anda aman dan terlindungi</p>
+            </div>
         </div>
     </body>
     </html>
@@ -1026,152 +1509,367 @@ def admin_dashboard(request):
 
     html_content = f"""
     <!DOCTYPE html>
-    <html>
+    <html lang="id">
     <head>
-        <title>{dashboard_title}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{dashboard_title} - Sistem Prediksi Depresi</title>
         <style>
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }}
+
             body {{
-                font-family: Arial, sans-serif;
-                max-width: 1200px;
-                margin: 50px auto;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                min-height: 100vh;
                 padding: 20px;
-                background-color: #f5f5f5;
             }}
-            .dashboard-container {{
-                background-color: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+            .main-container {{
+                max-width: 70%;
+                margin: 0 auto;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
             }}
-            .stats-grid {{
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
-                margin-bottom: 30px;
-            }}
-            .stat-card {{
-                background-color: #007bff;
+
+            .header {{
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
                 color: white;
-                padding: 20px;
-                border-radius: 8px;
+                padding: 30px;
                 text-align: center;
+                position: relative;
             }}
-            .stat-number {{
-                font-size: 2em;
-                font-weight: bold;
+
+            .header h1 {{
+                font-size: 2.2em;
+                font-weight: 700;
                 margin-bottom: 10px;
             }}
-            .stat-label {{
-                font-size: 0.9em;
+
+            .header p {{
+                font-size: 1.1em;
                 opacity: 0.9;
             }}
-            .admin-actions {{
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 15px;
-                margin-bottom: 30px;
-            }}
-            .action-button {{
-                display: block;
-                padding: 15px 20px;
-                background-color: #28a745;
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                text-align: center;
-                font-weight: bold;
-                transition: background-color 0.3s;
-            }}
-            .action-button:hover {{
-                background-color: #218838;
-            }}
-            .action-button.danger {{
-                background-color: #dc3545;
-            }}
-            .action-button.danger:hover {{
-                background-color: #c82333;
-            }}
-            .recent-submissions {{
-                margin-top: 30px;
-            }}
-            .submission-item {{
-                background-color: #f8f9fa;
-                padding: 15px;
-                margin-bottom: 10px;
-                border-radius: 6px;
-                border-left: 4px solid #007bff;
-            }}
-            .header-nav {{
+
+            .nav-bar {{
+                background: #f8f9fa;
+                padding: 15px 30px;
+                border-bottom: 1px solid #e9ecef;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 30px;
+                flex-wrap: wrap;
+                gap: 15px;
             }}
-            .back-link {{
-                color: #007bff;
-                text-decoration: none;
-                padding: 10px 15px;
-                border: 1px solid #007bff;
-                border-radius: 4px;
-            }}
+
             .user-info {{
-                color: #666;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 600;
+                color: #495057;
+            }}
+
+            .nav-links {{
+                display: flex;
+                gap: 15px;
+                flex-wrap: wrap;
+            }}
+
+            .nav-link {{
+                text-decoration: none;
+                padding: 8px 16px;
+                border-radius: 25px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 0.9em;
+            }}
+
+            .nav-link:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }}
+
+            .nav-link.primary {{ background: #6366f1; color: white; }}
+            .nav-link.primary:hover {{ background: #4f46e5; }}
+            .nav-link.success {{ background: #8b5cf6; color: white; }}
+            .nav-link.success:hover {{ background: #7c3aed; }}
+            .nav-link.danger {{ background: #a855f7; color: white; }}
+            .nav-link.danger:hover {{ background: #9333ea; }}
+
+            .content-section {{
+                padding: 40px;
+            }}
+
+            .stats-grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 25px;
+                margin-bottom: 40px;
+            }}
+
+            .stat-card {{
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                color: white;
+                padding: 25px;
+                border-radius: 15px;
+                text-align: center;
+                box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+                transition: all 0.3s ease;
+            }}
+
+            .stat-card:hover {{
+                transform: translateY(-5px);
+                box-shadow: 0 12px 35px rgba(99, 102, 241, 0.4);
+            }}
+
+            .stat-card.users {{
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            }}
+
+            .stat-card.reused {{
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+            }}
+
+            .stat-number {{
+                font-size: 2.5em;
+                font-weight: 700;
+                margin-bottom: 10px;
+            }}
+
+            .stat-label {{
+                font-size: 1em;
+                opacity: 0.9;
+                font-weight: 500;
+            }}
+            .admin-actions {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+                margin-bottom: 40px;
+            }}
+
+            .action-button {{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                padding: 18px 25px;
+                background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+                color: white;
+                text-decoration: none;
+                border-radius: 15px;
+                text-align: center;
+                font-weight: 600;
+                font-size: 1em;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            }}
+
+            .action-button:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+                color: white;
+                text-decoration: none;
+            }}
+
+            .action-button.danger {{
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            }}
+
+            .action-button.danger:hover {{
+                box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+            }}
+
+            .action-button.success {{
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            }}
+
+            .action-button.success:hover {{
+                box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            }}
+
+            .recent-submissions {{
+                margin-top: 40px;
+            }}
+
+            .section-title {{
+                font-size: 1.5em;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }}
+
+            .submission-item {{
+                background: #f8f9fa;
+                padding: 20px;
+                margin-bottom: 15px;
+                border-radius: 15px;
+                border-left: 5px solid #6366f1;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+            }}
+
+            .submission-item:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }}
+
+            .submission-header {{
+                font-weight: 600;
+                color: #6366f1;
+                margin-bottom: 10px;
+                font-size: 1.1em;
+            }}
+
+            .submission-details {{
+                color: #495057;
+                font-size: 0.9em;
+                line-height: 1.5;
+            }}
+
+            @media (max-width: 768px) {{
+                body {{
+                    padding: 10px;
+                }}
+
+                .main-container {{
+                    border-radius: 15px;
+                }}
+
+                .header {{
+                    padding: 20px;
+                }}
+
+                .header h1 {{
+                    font-size: 1.8em;
+                }}
+
+                .nav-bar {{
+                    padding: 15px 20px;
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 10px;
+                }}
+
+                .nav-links {{
+                    justify-content: center;
+                }}
+
+                .content-section {{
+                    padding: 30px 20px;
+                }}
+
+                .stats-grid {{
+                    grid-template-columns: 1fr;
+                }}
+
+                .admin-actions {{
+                    grid-template-columns: 1fr;
+                }}
             }}
         </style>
     </head>
     <body>
-        <div class="dashboard-container">
-            <div class="header-nav">
-                <a href="/pred/" class="back-link">← Back to Form</a>
+        <div class="main-container">
+            <!-- Header Section -->
+            <div class="header">
+                <h1>{'⚙️ Dashboard Admin' if user_is_admin else '🔬 Dashboard Ahli'}</h1>
+                <p>Kelola dan Pantau Sistem Prediksi Depresi</p>
+            </div>
+
+            <!-- Navigation Bar -->
+            <div class="nav-bar">
                 <div class="user-info">
-                    Admin: {request.user.get_full_name() or request.user.username}
-                    <a href="/pred/logout/" style="margin-left: 15px; color: #dc3545;">Logout</a>
+                    <span>{'👑' if user_is_admin else '🎓'}</span>
+                    <span>{request.user.get_full_name() or request.user.username}</span>
+                </div>
+                <div class="nav-links">
+                    <a href="/pred/" class="nav-link primary">🏠 Formulir Utama</a>
+                    <a href="/pred/history/" class="nav-link success">📋 Lihat Riwayat</a>
+                    <a href="/pred/logout/" class="nav-link danger">🚪 Keluar</a>
                 </div>
             </div>
 
-            <h1>{'🔧 Dashboard Admin' if user_is_admin else '🔬 Dashboard Ahli'}</h1>
+            <!-- Content Section -->
+            <div class="content-section">
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">{total_submissions}</div>
-                    <div class="stat-label">Total Pengiriman</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{total_submissions}</div>
+                        <div class="stat-label">📋 Total Pengiriman</div>
+                    </div>
+                    <div class="stat-card users">
+                        <div class="stat-number">{total_users}</div>
+                        <div class="stat-label">👥 Total Pengguna</div>
+                    </div>
+                    <div class="stat-card reused">
+                        <div class="stat-number">{reused_submissions}</div>
+                        <div class="stat-label">🔄 Reused di Dataset</div>
+                    </div>
                 </div>
-                <div class="stat-card" style="background-color: #28a745;">
-                    <div class="stat-number">{total_users}</div>
-                    <div class="stat-label">Total Pengguna</div>
-                </div>
-                <div class="stat-card" style="background-color: #17a2b8;">
-                    <div class="stat-number">{reused_submissions}</div>
-                    <div class="stat-label">Reused di Dataset</div>
-                </div>
-            </div>
 
-            <div class="admin-actions">
-                <a href="/pred/admin/all-submissions/" class="action-button">Lihat Semua Pengiriman</a>
-                <a href="/pred/history/" class="action-button">Tampilan Riwayat Reguler</a>
-                """ + (f'<a href="/pred/admin/users/" class="action-button">Kelola Pengguna</a>' if user_is_admin else '') + f"""
-                """ + (f'<a href="/admin/" class="action-button" style="background-color: #6f42c1;">Django Admin</a>' if user_is_admin else '') + f"""
-            </div>
+                <div class="admin-actions">
+                    <a href="/pred/admin/all-submissions/" class="action-button">📊 Lihat Semua Pengiriman</a>
+                    <a href="/pred/history/" class="action-button success">📋 Tampilan Riwayat Reguler</a>
+                    """ + (f'<a href="/pred/admin/users/" class="action-button">👥 Kelola Pengguna</a>' if user_is_admin else '') + f"""
+                    """ + (f'<a href="/admin/" class="action-button danger">⚙️ Django Admin</a>' if user_is_admin else '') + f"""
+                </div>
 
-            <div class="recent-submissions">
-                <h3>Pengiriman Terbaru</h3>
+                <div class="recent-submissions">
+                    <div class="section-title">
+                        📈 Pengiriman Terbaru
+                    </div>
     """
 
     if recent_submissions:
         for submission in recent_submissions:
             local_time = timezone.localtime(submission.submitted_at)
             gender_display = get_gender_display(submission.gender)
+            prediction_color = "#ef4444" if submission.prediction_result == "Positif" else "#10b981"
             html_content += f"""
-                <div class="submission-item">
-                    <strong>#{submission.id}</strong> - {gender_display}, Usia {submission.age}
-                    <br><small>{local_time.strftime('%Y-%m-%d %H:%M:%S')} WIB</small>
-                    {f'<br><span style="color: {"#dc3545" if submission.prediction_result == "Positif" else "#28a745"};">Prediksi: {submission.prediction_result}</span>' if submission.prediction_result else ''}
-                </div>
+                    <div class="submission-item">
+                        <div class="submission-header">
+                            📋 Submission #{submission.id} - {gender_display}, Usia {submission.age}
+                        </div>
+                        <div class="submission-details">
+                            📅 {local_time.strftime('%d %B %Y, %H:%M')} WIB
+                            {f'<br>🧠 <span style="color: {prediction_color}; font-weight: 600;">Prediksi: {submission.prediction_result}</span>' if submission.prediction_result else ''}
+                        </div>
+                    </div>
             """
     else:
-        html_content += '<p>Belum ada pengiriman.</p>'
+        html_content += """
+                    <div class="submission-item" style="text-align: center; color: #6c757d; font-style: italic;">
+                        📭 Belum ada pengiriman formulir
+                    </div>
+        """
 
     html_content += """
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 0.9em; border-top: 1px solid #e9ecef;">
+                <p>⚙️ Dashboard Admin - Sistem Prediksi Depresi</p>
+                <p style="margin-top: 5px;">🔒 Akses terbatas untuk administrator dan ahli</p>
             </div>
         </div>
     </body>

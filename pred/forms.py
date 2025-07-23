@@ -4,24 +4,37 @@ from django.contrib.auth.models import User
 
 class MyForm(forms.Form):
 
-    # Dropdown choices
+    # Radio button choices (removed empty default options)
     GENDER_CHOICES = [
-        ('', 'Pilih Gender'),
         ('1', 'Laki-laki'),
         ('0', 'Perempuan'),
     ]
 
     PRESSURE_CHOICES = [
-        ('', 'Pilih Opsi'),
-        ('1', 'Sangat Rendah'),
-        ('2', 'Rendah'),
-        ('3', 'Sedang'),
-        ('4', 'Tinggi'),
-        ('5', 'Sangat Tinggi'),
+        ('1', 'Sangat Santai'),
+        ('2', 'Santai'),
+        ('3', 'Cukup Sibuk'),
+        ('4', 'Tertekan'),
+        ('5', 'Sangat Tertekan'),
+    ]
+
+    SATISFACTION_CHOICES = [
+        ('1', 'Sangat Tidak Puas'),
+        ('2', 'Tidak Puas'),
+        ('3', 'Cukup Puas'),
+        ('4', 'Puas'),
+        ('5', 'Sangat Puas'),
+    ]
+
+    STRESS_FINANCIAL_CHOICES = [
+        ('1', 'Sangat Aman'),
+        ('2', 'Aman'),
+        ('3', 'Netral'),
+        ('4', 'Khawatir'),
+        ('5', 'Sangat Khawatir'),
     ]
 
     SLEEP_DURATION_CHOICES = [
-        ('', 'Pilih Opsi'),
         ('0', '5-6 Jam'),
         ('1', '7-8 Jam'),
         ('2', 'Kurang dari 5 Jam'),
@@ -29,14 +42,12 @@ class MyForm(forms.Form):
     ]
 
     DIETARY_HABITS_CHOICES = [
-        ('', 'Pilih Opsi'),
         ('0', 'Sehat'),
         ('1', 'Sedang'),
         ('2', 'Tidak Sehat'),
-    ]
+    ]   
 
     YES_NO_CHOICES = [
-        ('', 'Pilih Opsi'),
         ('1', 'Ya'),
         ('0', 'Tidak'),
     ]
@@ -46,7 +57,7 @@ class MyForm(forms.Form):
         choices=GENDER_CHOICES,
         label="Jenis Kelamin",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     age = forms.IntegerField(
@@ -62,42 +73,42 @@ class MyForm(forms.Form):
         choices=PRESSURE_CHOICES,
         label="Tekanan Kerja",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     job_satisfaction = forms.ChoiceField(
-        choices=PRESSURE_CHOICES,
+        choices=SATISFACTION_CHOICES,
         label="Kepuasan Kerja",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     financial_stress = forms.ChoiceField(
-        choices=PRESSURE_CHOICES,
+        choices=STRESS_FINANCIAL_CHOICES,
         label="Stres Keuangan",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     sleep_duration = forms.ChoiceField(
         choices=SLEEP_DURATION_CHOICES,
         label="Durasi Tidur",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     dietary_habits = forms.ChoiceField(
         choices=DIETARY_HABITS_CHOICES,
         label="Kebiasaan Makan",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     suicidal_thoughts = forms.ChoiceField(
         choices=YES_NO_CHOICES,
         label="Apakah Anda pernah memiliki pikiran untuk bunuh diri?",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     work_hours = forms.IntegerField(
@@ -113,7 +124,7 @@ class MyForm(forms.Form):
         choices=YES_NO_CHOICES,
         label="Riwayat Keluarga Penyakit Mental",
         required=True,
-        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+        widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
 
