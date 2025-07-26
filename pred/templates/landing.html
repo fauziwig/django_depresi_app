@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepressionCare - Sistem Diagnosis Dini Depresi</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #10b981;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f8fafc;
+            --bg-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Custom Navbar */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-dark) !important;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            color: var(--primary-color) !important;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .btn-primary-custom {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-primary-custom:hover {
+            background: white;
+            color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary-custom {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .btn-secondary-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* Section Styling */
+        .section-padding {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Statistics Section */
+        .stats-section {
+            background: var(--bg-light);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+
+        /* About System Section */
+        .about-system {
+            background: white;
+        }
+
+        .process-step {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--bg-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .step-description {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Disclaimer Section */
+        .disclaimer-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 4rem 0;
+            border-left: 5px solid #f59e0b;
+        }
+
+        .disclaimer-icon {
+            font-size: 3rem;
+            color: #d97706;
+            margin-bottom: 1rem;
+        }
+
+        .disclaimer-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+
+        .disclaimer-text {
+            color: #a16207;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-link:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--secondary-color);
+            transform: translateY(-3px);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .btn-secondary-custom {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .feature-card {
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#home">
+                <i class="bi bi-heart-pulse me-2"></i>DepressionCare
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Tentang Sistem</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Fitur</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#importance">Mengapa Penting</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Kontak</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-primary-custom" href="/pred/form/">Mulai Diagnosis</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content fade-in">
+                        <h1 class="hero-title">
+                            Diagnosis Dini Depresi,<br>
+                            <span style="color: #fbbf24;">Langkah Pertama</span><br>
+                            Menuju Kesehatan Mental
+                        </h1>
+                        <p class="hero-subtitle">
+                            Sistem diagnosis berbasis AI yang membantu Anda mengenali gejala depresi sejak dini.
+                            Privasi terjaga, hasil akurat, dan langkah awal menuju konsultasi profesional.
+                        </p>
+                        <div class="hero-buttons">
+                            <a href="/pred/form/" class="btn btn-primary-custom">
+                                <i class="bi bi-play-circle me-2"></i>Mulai Diagnosis Sekarang
+                            </a>
+                            <a href="#about" class="btn btn-secondary-custom">
+                                <i class="bi bi-info-circle me-2"></i>Pelajari Lebih Lanjut
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image text-center fade-in">
+                        <div style="font-size: 15rem; color: rgba(255, 255, 255, 0.3);">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats-section section-padding">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">280M+</span>
+                        <div class="stat-label">Orang dengan Depresi di Dunia</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">75%</span>
+                        <div class="stat-label">Kasus Tidak Terdiagnosis</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">90%</span>
+                        <div class="stat-label">Dapat Diobati Jika Terdeteksi Dini</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">24/7</span>
+                        <div class="stat-label">Akses Sistem Kami</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About System Section -->
+    <section id="about" class="about-system section-padding">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="section-title fade-in">Tentang Sistem DepressionCare</h2>
+                    <p class="section-subtitle fade-in">
+                        Sistem diagnosis dini depresi yang menggunakan teknologi AI untuk membantu Anda
+                        mengenali gejala dan mendapatkan bantuan yang tepat waktu.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-lg-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h3 class="feature-title">Teknologi AI Terdepan</h3>
+                        <p class="feature-description">
+                            Menggunakan algoritma machine learning yang telah dilatih dengan data klinis
+                            untuk memberikan analisis yang akurat dan dapat diandalkan.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h3 class="feature-title">Privasi Terjamin</h3>
+                        <p class="feature-description">
+                            Semua data pribadi dan hasil diagnosis Anda dienkripsi dan disimpan dengan
+                            standar keamanan tinggi. Privasi Anda adalah prioritas utama kami.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="row">
+                <div class="col-12 mb-5">
+                    <h3 class="text-center mb-5" style="font-size: 2rem; color: var(--text-dark);">
+                        Bagaimana Sistem Bekerja?
+                    </h3>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="process-step fade-in">
+                        <div class="step-number">1</div>
+                        <h4 class="step-title">Isi Kuesioner</h4>
+                        <p class="step-description">
+                            Jawab serangkaian pertanyaan tentang gejala, perasaan, dan kondisi
+                            kesehatan mental Anda dalam beberapa menit.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="process-step fade-in">
+                        <div class="step-number">2</div>
+                        <h4 class="step-title">Analisis AI</h4>
+                        <p class="step-description">
+                            Sistem AI menganalisis jawaban Anda menggunakan algoritma yang telah
+                            divalidasi secara klinis untuk memberikan hasil yang akurat.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="process-step fade-in">
+                        <div class="step-number">3</div>
+                        <h4 class="step-title">Dapatkan Hasil</h4>
+                        <p class="step-description">
+                            Terima hasil diagnosis awal dan rekomendasi langkah selanjutnya,
+                            termasuk saran untuk konsultasi dengan profesional.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section id="features" class="section-padding" style="background: var(--bg-light);">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="section-title fade-in">Fitur Unggulan Sistem</h2>
+                    <p class="section-subtitle fade-in">
+                        Dirancang khusus untuk memberikan pengalaman diagnosis yang nyaman,
+                        akurat, dan mudah dipahami.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                        <h3 class="feature-title">Interface User-Friendly</h3>
+                        <p class="feature-description">
+                            Antarmuka yang intuitif dan mudah digunakan, dirancang untuk semua kalangan
+                            tanpa memerlukan pengetahuan teknis khusus.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h3 class="feature-title">Hasil Prediksi Akurat</h3>
+                        <p class="feature-description">
+                            Menggunakan model machine learning yang telah divalidasi dengan tingkat
+                            akurasi tinggi berdasarkan data klinis terpercaya.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-lock"></i>
+                        </div>
+                        <h3 class="feature-title">Data Terlindungi</h3>
+                        <p class="feature-description">
+                            Enkripsi end-to-end dan penyimpanan data yang aman memastikan informasi
+                            pribadi Anda tetap rahasia dan terlindungi.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                        <h3 class="feature-title">Hasil Cepat</h3>
+                        <p class="feature-description">
+                            Dapatkan hasil diagnosis dalam hitungan menit, memungkinkan Anda untuk
+                            segera mengambil langkah yang diperlukan.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-journal-medical"></i>
+                        </div>
+                        <h3 class="feature-title">Riwayat Diagnosis</h3>
+                        <p class="feature-description">
+                            Simpan dan pantau riwayat diagnosis Anda untuk melihat perkembangan
+                            kondisi kesehatan mental dari waktu ke waktu.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h3 class="feature-title">Dukungan Profesional</h3>
+                        <p class="feature-description">
+                            Rekomendasi untuk konsultasi lanjutan dengan psikolog atau psikiater
+                            berdasarkan hasil diagnosis yang diperoleh.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Early Diagnosis Matters Section -->
+    <section id="importance" class="section-padding">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="section-title fade-in">Mengapa Diagnosis Dini Penting?</h2>
+                    <p class="section-subtitle fade-in">
+                        Mengenali gejala depresi sejak dini dapat membuat perbedaan besar dalam
+                        proses pemulihan dan kualitas hidup Anda.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4">
+                    <div class="fade-in">
+                        <h3 style="color: var(--primary-color); margin-bottom: 2rem; font-size: 1.8rem;">
+                            Manfaat Diagnosis Dini:
+                        </h3>
+                        <div class="mb-4">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="me-3" style="color: var(--accent-color); font-size: 1.5rem;">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <div>
+                                    <h5 style="color: var(--text-dark);">Intervensi Lebih Efektif</h5>
+                                    <p style="color: var(--text-light);">
+                                        Penanganan yang dimulai lebih awal memberikan hasil yang lebih baik
+                                        dan proses pemulihan yang lebih cepat.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="me-3" style="color: var(--accent-color); font-size: 1.5rem;">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <div>
+                                    <h5 style="color: var(--text-dark);">Mencegah Komplikasi</h5>
+                                    <p style="color: var(--text-light);">
+                                        Diagnosis dini membantu mencegah gejala menjadi lebih parah dan
+                                        mengurangi risiko komplikasi jangka panjang.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="me-3" style="color: var(--accent-color); font-size: 1.5rem;">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <div>
+                                    <h5 style="color: var(--text-dark);">Kualitas Hidup Lebih Baik</h5>
+                                    <p style="color: var(--text-light);">
+                                        Dengan penanganan yang tepat waktu, Anda dapat mempertahankan
+                                        kualitas hidup dan produktivitas sehari-hari.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="text-center fade-in">
+                        <div style="background: var(--bg-gradient); border-radius: 20px; padding: 3rem; color: white;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">
+                                <i class="bi bi-lightbulb"></i>
+                            </div>
+                            <h4 style="margin-bottom: 1rem;">Tahukah Anda?</h4>
+                            <p style="font-size: 1.1rem; line-height: 1.6; margin: 0;">
+                                Orang yang mendapatkan diagnosis dan penanganan dini memiliki tingkat
+                                pemulihan <strong>3x lebih tinggi</strong> dibandingkan mereka yang
+                                terlambat mendapatkan bantuan profesional.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Disclaimer Section -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="disclaimer-section fade-in">
+                <div class="text-center">
+                    <div class="disclaimer-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <h3 class="disclaimer-title">Penting untuk Diketahui</h3>
+                    <div class="disclaimer-text">
+                        <p class="mb-3">
+                            <strong>Sistem DepressionCare adalah alat bantu diagnosis awal dan BUKAN pengganti
+                            konsultasi profesional dengan psikolog atau psikiater.</strong>
+                        </p>
+                        <p class="mb-3">
+                            Hasil yang diberikan oleh sistem ini hanya sebagai indikasi awal dan tidak dapat
+                            dijadikan sebagai diagnosis medis yang definitif. Jika Anda mengalami gejala yang
+                            mengkhawatirkan atau hasil menunjukkan indikasi depresi, sangat disarankan untuk
+                            segera berkonsultasi dengan tenaga kesehatan mental profesional.
+                        </p>
+                        <p class="mb-0">
+                            Dalam situasi darurat atau jika Anda memiliki pikiran untuk menyakiti diri sendiri,
+                            segera hubungi layanan kesehatan darurat atau hotline kesehatan mental terdekat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="section-padding" style="background: var(--bg-gradient);">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="fade-in">
+                        <h2 style="color: white; font-size: 2.5rem; margin-bottom: 1rem;">
+                            Siap Memulai Perjalanan Menuju Kesehatan Mental yang Lebih Baik?
+                        </h2>
+                        <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.2rem; margin-bottom: 2rem;">
+                            Ambil langkah pertama hari ini. Diagnosis dini adalah kunci pemulihan yang efektif.
+                        </p>
+                        <a href="/pred/form/" class="btn btn-primary-custom" style="font-size: 1.2rem; padding: 18px 50px;">
+                            <i class="bi bi-heart-pulse me-2"></i>Mulai Diagnosis Sekarang
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h4 class="footer-title">
+                        <i class="bi bi-heart-pulse me-2"></i>DepressionCare
+                    </h4>
+                    <p style="color: rgba(255, 255, 255, 0.7); line-height: 1.6;">
+                        Sistem diagnosis dini depresi yang membantu Anda mengenali gejala dan
+                        mendapatkan bantuan profesional yang tepat waktu.
+                    </p>
+                    <div class="mt-3">
+                        <a href="#" class="social-icon">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="footer-title">Navigasi</h5>
+                    <a href="#home" class="footer-link">Beranda</a>
+                    <a href="#about" class="footer-link">Tentang Sistem</a>
+                    <a href="#features" class="footer-link">Fitur</a>
+                    <a href="#importance" class="footer-link">Mengapa Penting</a>
+                    <a href="/pred/form/" class="footer-link">Mulai Diagnosis</a>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="footer-title">Bantuan</h5>
+                    <a href="#" class="footer-link">FAQ</a>
+                    <a href="#" class="footer-link">Panduan Penggunaan</a>
+                    <a href="#" class="footer-link">Kebijakan Privasi</a>
+                    <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                    <a href="#" class="footer-link">Hubungi Kami</a>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="footer-title">Darurat</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
+                        Jika Anda dalam keadaan darurat atau memiliki pikiran untuk menyakiti diri:
+                    </p>
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 10px;">
+                        <p style="color: white; margin: 0; font-weight: 600;">
+                            <i class="bi bi-telephone me-2"></i>Hotline: 119 (24/7)
+                        </p>
+                        <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                            Layanan Kesehatan Mental Darurat
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 2rem 0 1rem;">
+
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p style="color: rgba(255, 255, 255, 0.6); margin: 0;">
+                        © 2024 DepressionCare. Semua hak dilindungi.
+                        <span style="color: rgba(255, 255, 255, 0.4);">|</span>
+                        Dibuat dengan <i class="bi bi-heart-fill" style="color: #ef4444;"></i> untuk kesehatan mental yang lebih baik.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Fade in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Active navigation link highlighting
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Initialize fade-in animations for elements already in view
+        document.addEventListener('DOMContentLoaded', function() {
+            const elementsInView = document.querySelectorAll('.fade-in');
+            elementsInView.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    el.classList.add('visible');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

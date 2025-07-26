@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Prediksi Depresi - Formulir Penilaian</title>
+    <title>Skrining Kesehatan Mental - Kenali Diri Anda Lebih Baik</title>
     <style>
         /* Reset and Base Styles */
         * {
@@ -522,8 +522,8 @@
     <div class="main-container">
         <!-- Header Section -->
         <div class="header">
-            <h1>🧠 Sistem Prediksi Depresi</h1>
-            <p>Penilaian Kesehatan Mental Berbasis AI</p>
+            <h1>🧠 Skrining Kesehatan Mental</h1>
+            <p>Kenali dan Pahami Kesehatan Mental Anda dengan Lebih Baik</p>
         </div>
 
         <!-- Navigation Bar -->
@@ -534,7 +534,8 @@
                     <span>Selamat datang, {{ user.get_full_name|default:user.username }}!</span>
                 </div>
                 <div class="nav-links">
-                    <a href="/pred/history/" class="nav-link primary">📋 Riwayat Saya</a>
+                    <a href="/" class="nav-link primary">🏠 Beranda</a>
+                    <a href="/pred/history/" class="nav-link success">📋 Riwayat Saya</a>
                     {% if is_admin %}
                         <a href="/pred/admin/dashboard/" class="nav-link danger">⚙️ Dashboard Admin</a>
                     {% elif is_expert %}
@@ -548,7 +549,8 @@
                     <span>Mode Anonim</span>
                 </div>
                 <div class="nav-links">
-                    <a href="/pred/history/" class="nav-link primary">📋 Lihat Riwayat</a>
+                    <a href="/" class="nav-link primary">🏠 Beranda</a>
+                    <a href="/pred/history/" class="nav-link success">📋 Lihat Riwayat</a>
                     <a href="/pred/login/" class="nav-link success">🔐 Masuk</a>
                     <a href="/pred/register/" class="nav-link purple">📝 Daftar</a>
                 </div>
@@ -558,8 +560,29 @@
         <!-- Form Section -->
         <div class="form-section">
             <div class="form-title">
-                <h2>📋 Formulir Penilaian Kesehatan Mental</h2>
-                <p>Silakan isi semua pertanyaan dengan jujur untuk mendapatkan hasil yang akurat</p>
+                <h2>🧠 Kenali Kesehatan Mental Anda dengan Lebih Baik</h2>
+                <p style="font-size: 1.1em; color: #6366f1; font-weight: 500; margin-bottom: 20px;">
+                    Skrining awal untuk membantu Anda memahami kondisi kesehatan mental dan meningkatkan kesadaran diri.
+                </p>
+
+                <div style="text-align: left; margin-bottom: 30px; line-height: 1.7; background: #f8f9ff; padding: 25px; border-radius: 15px; border-left: 4px solid #6366f1;">
+                    <p style="margin-bottom: 15px;">
+                        Selamat datang di sistem skrining kesehatan mental kami. Alat ini dirancang untuk memberikan penilaian awal mengenai kondisi kesehatan mental Anda melalui serangkaian pertanyaan sederhana. Penting untuk diingat bahwa ini bukanlah diagnosis medis final, melainkan langkah pertama untuk membantu Anda memahami kondisi diri sendiri dengan lebih baik.
+                    </p>
+
+                    <p style="margin-bottom: 15px;">
+                        Dengan menggunakan teknologi AI yang telah teruji, sistem ini dapat membantu meningkatkan kesadaran diri Anda terhadap kesehatan mental. <strong style="color: #6366f1;">Semua informasi yang Anda berikan akan dijaga kerahasiaannya dengan ketat dan hanya digunakan untuk keperluan analisis.</strong> Data Anda aman, terlindungi, dan tidak akan dibagikan kepada pihak ketiga tanpa persetujuan Anda.
+                    </p>
+
+                    <p style="color: #8b5cf6; font-weight: 500; font-style: italic; margin: 0;">
+                        Silakan isi formulir di bawah ini dengan jujur dan tenang - setiap langkah yang Anda ambil adalah investasi berharga untuk kesehatan mental Anda.
+                    </p>
+                </div>
+
+                <!-- Progress encouragement -->
+                <div class="progress-text" style="text-align: center; margin: 20px 0; color: #6c757d;">
+                    <p>📋 Anda sedang mengambil langkah penting untuk kesehatan mental Anda</p>
+                </div>
             </div>
 
             <form method="post">
@@ -651,13 +674,21 @@
                     </div>
                 </div>
 
+                <!-- Completion Encouragement -->
+                <div class="completion-encouragement" style="background: #f0f9ff; padding: 20px; border-radius: 15px; margin: 30px 0; text-align: center; border: 1px solid #e0e7ff;">
+                    <p style="color: #0369a1; margin: 0; font-size: 1.05em; line-height: 1.6;">
+                        🌟 <strong>Terima kasih telah meluangkan waktu untuk diri Anda sendiri.</strong><br>
+                        <span style="font-weight: normal;">Hasil skrining akan membantu Anda memahami kondisi kesehatan mental dengan lebih baik.</span>
+                    </p>
+                </div>
+
                 <!-- Submit Section -->
                 <div class="submit-section">
                     <button type="submit" class="submit-btn">
                         🚀 Analisis Kesehatan Mental Saya
                     </button>
                     <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
-                        Data Anda akan diproses dengan aman dan rahasia
+                        🔒 Data Anda akan diproses dengan aman dan rahasia
                     </p>
                 </div>
             </form>

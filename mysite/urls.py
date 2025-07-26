@@ -18,8 +18,8 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path("pred/", include("pred.urls")),
+    path("", include("pred.urls")),  # Root URL includes pred.urls
     path("polls/", include("polls.urls")),
     # path admin/ for run the django admin view/interface
-    path('admin/', admin.site.urls), 
+    path('admin/', admin.site.urls),
 ]

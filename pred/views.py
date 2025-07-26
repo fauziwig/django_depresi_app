@@ -24,6 +24,14 @@ def is_admin(user):
 def is_expert(user):
     return user.is_authenticated and hasattr(user, 'groups') and user.groups.filter(name='Expert').exists()
 
+# Landing page view
+def landing_view(request):
+    """
+    Display the landing page with system information and call-to-action.
+    This is purely informational and doesn't affect any core system functionality.
+    """
+    return render(request, 'landing.html')
+
 # Helper function to check if user has admin-level access (admin or expert)
 def has_admin_access(user):
     return is_admin(user) or is_expert(user)
