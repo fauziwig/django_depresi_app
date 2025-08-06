@@ -19,7 +19,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path("", include("pred.urls")),  # Root URL includes pred.urls
-    path("polls/", include("polls.urls")),
+    # path("polls/", include("polls.urls")),
     # path admin/ for run the django admin view/interface
     path('admin/', admin.site.urls),
 ]

@@ -2212,7 +2212,8 @@ def expert_reuse_data(request, submission_id):
 
 def add_to_dataset(new_row):
     """
-    Add a new row to the dataset CSV file
+    Add a new row to the dataset CSV file.
+    Retrain model if 20 new rows have been added.
     Returns: True if successful, False otherwise
     """
     try:
@@ -2220,18 +2221,34 @@ def add_to_dataset(new_row):
         import os
         from django.conf import settings
 
-        # Load existing dataset
         dataset_path = os.path.join(settings.BASE_DIR, 'dataset_processed.csv')
+        counter_path = os.path.join(settings.BASE_DIR, 'retrain_counter.txt')
+        model_path = os.path.join(settings.BASE_DIR, 'svm_model.joblib')
+
+        # Load existing dataset
         df = pd.read_csv(dataset_path)
-
-        # Create new row as DataFrame
         new_row_df = pd.DataFrame([new_row])
-
-        # Append to existing dataset
         updated_df = pd.concat([df, new_row_df], ignore_index=True)
-
-        # Save back to CSV
         updated_df.to_csv(dataset_path, index=False)
+
+        # --- Retrain logic ---
+        # Read or initialize counter
+        if os.path.exists(counter_path):
+            with open(counter_path, 'r') as f:
+                counter = int(f.read().strip() or 0)
+        else:
+            counter = 0
+
+        counter += 1
+
+        if counter >= 2:
+            # Retrain model
+            retrain_model(dataset_path, model_path)
+            counter = 0  # Reset counter
+
+        # Save counter
+        with open(counter_path, 'w') as f:
+            f.write(str(counter))
 
         print(f"Dataset updated. New size: {len(updated_df)} rows")
         return True
@@ -2240,3 +2257,34 @@ def add_to_dataset(new_row):
         print(f"Error updating dataset: {e}")
         return False
 
+def retrain_model(dataset_path, model_path):
+    """
+    Retrain the ML model using the updated dataset and save as joblib.
+    """
+    import pandas as pd
+    from sklearn.svm import SVC
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+
+    df = pd.read_csv(dataset_path)
+    # Assume 'depression' is the target column
+    X = df.drop('depression', axis=1)
+    y = df['depression']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    scaler = StandardScaler()
+
+    # Pelajari skala dari data latih dan transformasikan
+    X_train_scaled = scaler.fit_transform(X_train)
+
+    # Terapkan skala yang sama ke data uji
+    X_test_scaled = scaler.transform(X_test)
+
+
+    # Retrain model (simple SVM, adjust as needed)
+    model = SVC(probability=True, kernel='linear', random_state=42, gamma=1, C=100)
+    model.fit(X_train_scaled, y_train)
+    
+    joblib.dump(model, model_path)
+    print("Model retrained and saved.")
