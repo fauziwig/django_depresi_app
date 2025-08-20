@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DepresiCare - Diagnosis Dini Depresi{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary: #fff;
+            --secondary: #673968;
+            --third: #7c3aed;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: var(--primary);
+            color: #222;
+        }
+        .navbar {
+            background-color: var(--primary) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,.05);
+        }
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--secondary) !important;
+        }
+        .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+            background-color: var(--secondary) !important;
+            color: #fff !important;
+        }
+        .nav-link {
+            color: #222 !important;
+        }
+        .nav-link:hover, .nav-link:focus {
+            color: var(--third) !important;
+        }
+        .btn-primary {
+            background-color: var(--secondary) !important;
+            border-color: var(--secondary) !important;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--third) !important;
+            border-color: var(--third) !important;
+        }
+        .hero-section {
+            background-color: #f4f4ff;
+            padding: 6rem 0;
+        }
+        .section-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #eef2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -40px auto 0 auto;
+            position: relative;
+            z-index: 2;
+            border: 6px solid var(--primary);
+            color: var(--secondary);
+            font-size: 2.5rem;
+        }
+        .footer {
+            background: #f8fafc;
+            color: #888;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'landing_view' %}">
+                <i class="bi bi-brain text-primary"></i> DepresiCare
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto nav-pills">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'landing_view' %}active{% endif %}" href="{% url 'landing_view' %}">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#penting">Mengapa Penting</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#gejala">Gejala</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'diagnosis' %}active{% endif %}" href="{% url 'diagnosis' %}">Diagnosis</a>
+                    </li>
+                    
+                </ul>
+                <div class="d-flex gap-2">
+                    {% comment %} <a href="{% url 'login' %}" class="btn btn-link fw-semibold text-dark">Masuk</a> {% endcomment %}
+                    {% comment %} <a href="{% url 'register' %}" class="btn fw-semibold" style="background:#C084FC;color:#fff;">Daftar</a> {% endcomment %}
+                    <a href="#login" class="btn btn-link fw-semibold text-dark">Masuk</a>
+                    <a href="#register" class="btn fw-semibold" style="background:#C084FC;color:#fff;">Daftar</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="container text-center py-4 mt-5 footer">
+        <p class="text-muted">&copy; 2025 DepresiCare. Semua Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

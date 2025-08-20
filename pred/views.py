@@ -57,40 +57,59 @@ def transform_form_data_for_model(form_data):
         'age': int(form_data['age']),
         'work_pressure': int(form_data['work_pressure']),
         'job_satisfaction': int(form_data['job_satisfaction']),
-        'financial_stress': int(form_data['financial_stress']),
         'sleep_duration': int(form_data['sleep_duration']),
         'dietary_habits': int(form_data['dietary_habits']),
         'suicidal_thoughts': int(form_data['suicidal_thoughts']),
         'work_hours': int(form_data['work_hours']),
+        'financial_stress': int(form_data['financial_stress']),
         'family_history_of_mental_illness': int(form_data['family_history_of_mental_illness']),
         'gender_Female': gender_female,
         'gender_Male': gender_male
     }
 
+
+
     return transformed_data
 
 # Display helper functions to convert database values to human-readable text
 def get_gender_display(value):
-    """Convert gender database value to display text"""
     gender_choices = {
-        '1': 'Laki laki',
+        '1': 'Laki-laki',
         '0': 'Perempuan'
     }
     return gender_choices.get(str(value), 'Tidak Diketahui')
 
 def get_pressure_display(value):
-    """Convert pressure-related database value to display text"""
     pressure_choices = {
-        '1': 'Sangat Rendah',
-        '2': 'Rendah',
-        '3': 'Sedang',
-        '4': 'Tinggi',
-        '5': 'Sangat Tinggi'
+        '1': 'Sangat Santai',
+        '2': 'Santai',
+        '3': 'Cukup Sibuk',
+        '4': 'Tertekan',
+        '5': 'Sangat Tertekan'
     }
     return pressure_choices.get(str(value), 'Tidak Diketahui')
 
+def get_satisfaction_display(value):
+    satisfaction_choices = {
+        '1': 'Sangat Tidak Puas',
+        '2': 'Tidak Puas',
+        '3': 'Cukup Puas',
+        '4': 'Puas',
+        '5': 'Sangat Puas'
+    }
+    return satisfaction_choices.get(str(value), 'Tidak Diketahui')
+
+def get_financial_stress_display(value):
+    financial_stress_choices = {
+        '1': 'Sangat Aman',
+        '2': 'Aman',
+        '3': 'Netral',
+        '4': 'Khawatir',
+        '5': 'Sangat Khawatir'
+    }
+    return financial_stress_choices.get(str(value), 'Tidak Diketahui')
+
 def get_sleep_duration_display(value):
-    """Convert sleep duration database value to display text"""
     sleep_choices = {
         '0': '5-6 Jam',
         '1': '7-8 Jam',
@@ -100,7 +119,6 @@ def get_sleep_duration_display(value):
     return sleep_choices.get(str(value), 'Tidak Diketahui')
 
 def get_dietary_habits_display(value):
-    """Convert dietary habits database value to display text"""
     dietary_choices = {
         '0': 'Sehat',
         '1': 'Sedang',
@@ -108,14 +126,19 @@ def get_dietary_habits_display(value):
     }
     return dietary_choices.get(str(value), 'Tidak Diketahui')
 
-def get_yes_no_display(value):
-    """Convert yes/no database value to display text"""
-    yes_no_choices = {
-        '1': 'Ya',
-        '0': 'Tidak'
+def get_pernah_tidak_display(value):
+    pernah_tidak_choices = {
+        '1': 'Pernah',
+        '0': 'Tidak Pernah'
     }
-    return yes_no_choices.get(str(value), 'Tidak Diketahui')
+    return pernah_tidak_choices.get(str(value), 'Tidak Diketahui')
 
+def get_ada_tidak_display(value):
+    ada_tidak_choices = {
+        '1': 'Ada',
+        '0': 'Tidak Ada'
+    }
+    return ada_tidak_choices.get(str(value), 'Tidak Diketahui')
 # Load the ML model
 def load_depression_model():
     """Load the depression prediction model"""
@@ -127,14 +150,27 @@ def load_depression_model():
         print(f"Error loading model: {e}")
         return None
 
+def load_depression_scaler():
+    """Load the depression prediction scaler"""
+    try:
+        scaler_path = os.path.join(settings.BASE_DIR, 'load_scaler.joblib')
+        scaler = joblib.load(scaler_path)
+        return scaler
+    except Exception as e:
+        print(f"Error loading scaler: {e}")
+        return None
+
 # Prediction function
 def predict_depression(form_data):
     """
     Predict depression based on form data
     Returns: dict with prediction result and probability
     """
+    
     try:
         model = load_depression_model()
+        scaler = load_depression_scaler()
+
         if model is None:
             return {
                 'prediction': 'Error',
@@ -142,11 +178,21 @@ def predict_depression(form_data):
                 'message': 'Model could not be loaded'
             }
 
+        if scaler is None:
+            return {
+                'prediction': 'Error',
+                'probability': 0,
+                'message': 'Scaler could not be loaded'
+            }
+        
+
         # Transform form data to the format expected by the ML model
         transformed_data = transform_form_data_for_model(form_data)
-
+    
         # Create DataFrame with the transformed data
         input_data = pd.DataFrame([transformed_data])
+        
+        input_data_scaled = scaler.transform(input_data)
 
         # Log the transformed data for debugging
         print("\n🔄 Data Transformation for ML Model:")
@@ -158,11 +204,13 @@ def predict_depression(form_data):
         print()
 
         # Make prediction
-        prediction = model.predict(input_data)[0]
+        print('input data : ',type(transformed_data))
+        prediction = model.predict(input_data_scaled)
+        print('prediction: ',prediction[0])
 
         # Get prediction probability if available
         try:
-            prediction_proba = model.predict_proba(input_data)[0]
+            prediction_proba = model.predict_proba(input_data_scaled)[0]
             probability = max(prediction_proba) * 100  # Convert to percentage
         except:
             probability = 0
@@ -326,10 +374,10 @@ def find_similar_cases(form_data):
                 'job_satisfaction': get_pressure_display(best_match_row['job_satisfaction']),
                 'sleep_duration': get_sleep_duration_display(best_match_row['sleep_duration']),
                 'dietary_habits': get_dietary_habits_display(best_match_row['dietary_habits']),
-                'suicidal_thoughts': get_yes_no_display(best_match_row['suicidal_thoughts']),
+                'suicidal_thoughts': get_pernah_tidak_display(best_match_row['suicidal_thoughts']),
                 'work_hours': int(best_match_row['work_hours']),
                 'financial_stress': get_pressure_display(best_match_row['financial_stress']),
-                'family_history': get_yes_no_display(best_match_row['family_history_of_mental_illness']),
+                'family_history': get_ada_tidak_display(best_match_row['family_history_of_mental_illness']),
                 'depression': 'Positif' if best_match_row['depression'] == 1 else 'Negatif'
             },
             'top_matches': top_matches,
@@ -346,8 +394,8 @@ def find_similar_cases(form_data):
             'message': 'Tidak dapat menghitung kemiripan dengan dataset'
         }
 
-def my_view(request):
-    template = loader.get_template("my_template.html")
+def diagnosis(request):
+    template = loader.get_template("diagnosis_form.html")
 
     if request.method == 'POST':
         # Log the raw request data
@@ -376,7 +424,7 @@ def my_view(request):
             for field, errors in form.errors.items():
                 print(f"  {field}: {errors}")
             print("=" * 60)
-            return render(request, 'my_template.html', {'form': form})
+            return render(request, 'base.html', {'form': form})
 
         print("=" * 60)
 
@@ -388,17 +436,18 @@ def my_view(request):
                 age=form.cleaned_data['age'],
                 work_pressure=form.cleaned_data['work_pressure'],
                 job_satisfaction=form.cleaned_data['job_satisfaction'],
-                financial_stress=form.cleaned_data['financial_stress'],
                 sleep_duration=form.cleaned_data['sleep_duration'],
                 dietary_habits=form.cleaned_data['dietary_habits'],
                 suicidal_thoughts=form.cleaned_data['suicidal_thoughts'],
                 work_hours=form.cleaned_data['work_hours'],
+                financial_stress=form.cleaned_data['financial_stress'],
                 family_history_of_mental_illness=form.cleaned_data['family_history_of_mental_illness']
             )
 
             # Perform ML prediction
             prediction_result = predict_depression(form.cleaned_data)
 
+            print("Prediction resukt: ", prediction_result)
             # Perform cosine similarity analysis
             print("\n🔍 Starting similarity analysis...")
             try:
@@ -413,6 +462,7 @@ def my_view(request):
                     'error': str(e),
                     'message': 'Terjadi kesalahan dalam analisis kemiripan'
                 }
+            
 
             # Update the submission with prediction results
             submission.prediction_result = prediction_result.get('prediction', 'Unknown')
@@ -462,545 +512,90 @@ def results_view(request):
     prediction_result = request.session.get('prediction_result', {})
     similarity_result = request.session.get('similarity_result', {})
 
-
-    print(form_data)
     if not form_data:
-        return HttpResponse("<h1>Data tidak ditemukan</h1><p><a href='/pred/'>Kembali ke formulir</a></p>")
+        return HttpResponse("<h1>Data tidak ditemukan</h1><p><a href='/diagnosis'>Kembali ke formulir</a></p>")
 
     # Get the submission time if we have the submission ID
     submission_time = None
     if submission_id:
         try:
             submission = FormSubmission.objects.get(id=submission_id)
-            submission_time = timezone.localtime(submission.submitted_at)
+            submission_time = timezone.localtime(submission.submitted_at).strftime('%d %B %Y, %H:%M:%S WIB')
         except FormSubmission.DoesNotExist:
             pass
 
-    # Create styled HTML to display the form data
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="id">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hasil Analisis Kesehatan Mental</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+    # Diagnosis result text and desc
+    diagnosis_result_text = ""
+    diagnosis_result_desc = ""
+    if prediction_result.get('prediction', '').lower() == 'positif':
+        diagnosis_result_text = '<span style="color:#b46fc2;">Terindikasi Mengalami Depresi</span> (Diagnosis : 1)'
+        diagnosis_result_desc = "Berdasarkan jawaban yang Anda berikan, sistem mendeteksi adanya gejala yang signifikan untuk diagnosis depresi. Segera konsultasikan dengan profesional kesehatan mental."
+    elif prediction_result.get('prediction', '').lower() == 'negatif':
+        diagnosis_result_text = 'Tidak Terindikasi Mengalami Depresi <span style="color:#b46fc2;">(Diagnosis : 0)</span>'
+        diagnosis_result_desc = "Berdasarkan jawaban yang Anda berikan, sistem tidak menemukan adanya gejala yang signifikan untuk diagnosis depresi saat ini. Ini adalah indikasi yang sangat positif mengenai kondisi kesehatan mental Anda."
+    else:
+        diagnosis_result_text = prediction_result.get('prediction', 'Tidak Diketahui')
+        diagnosis_result_desc = prediction_result.get('message', '')
 
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                padding: 20px;
-            }
+    # --- Tambahkan log hasil prediksi ke server log ---
+    import logging
+    logger = logging.getLogger("django")
+    logger.info(
+        "\n🧠 Prediction Result:\n"
+        f"  Prediction: {prediction_result.get('prediction', '-')}\n"
+        f"  Probability: {prediction_result.get('probability', '-')}\n"
+        f"  Message: {prediction_result.get('message', '-')}\n"
+    )
 
-            .main-container {
-                max-width: 900px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                overflow: hidden;
-            }
-
-            .header {
-                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-            }
-
-            .header h1 {
-                font-size: 2.2em;
-                font-weight: 700;
-                margin-bottom: 10px;
-            }
-
-            .header p {
-                font-size: 1.1em;
-                opacity: 0.9;
-            }
-
-            .results-content {
-                padding: 40px;
-            }
-
-            .section {
-                margin-bottom: 40px;
-                background: #f8f9fa;
-                border-radius: 15px;
-                padding: 25px;
-                border-left: 5px solid #4facfe;
-            }
-
-            .section-title {
-                font-size: 1.4em;
-                font-weight: 600;
-                color: #2c3e50;
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .prediction-container {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border-radius: 15px;
-                padding: 30px;
-                text-align: center;
-                margin-bottom: 30px;
-                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-            }
-
-            .prediction-positive {
-                background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-                box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
-            }
-
-            .prediction-negative {
-                background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
-                box-shadow: 0 10px 30px rgba(0, 210, 211, 0.3);
-            }
-
-            .prediction-title {
-                font-size: 1.5em;
-                font-weight: 700;
-                margin-bottom: 15px;
-            }
-
-            .prediction-message {
-                font-size: 1.1em;
-                margin-bottom: 10px;
-                line-height: 1.5;
-            }
-
-            .prediction-probability {
-                font-size: 1.3em;
-                font-weight: 600;
-                margin-top: 15px;
-                padding: 10px 20px;
-                background: rgba(255, 255, 255, 0.2);
-                border-radius: 25px;
-                display: inline-block;
-            }
-
-            .similarity-container {
-                background: #f8f9fa;
-                border-radius: 15px;
-                padding: 25px;
-                margin-bottom: 30px;
-                border-left: 5px solid #17a2b8;
-            }
-
-            .similarity-title {
-                font-size: 1.4em;
-                font-weight: 600;
-                color: #2c3e50;
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .best-match {
-                background: white;
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 20px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            }
-
-            .similarity-score {
-                font-size: 1.2em;
-                font-weight: 600;
-                color: #17a2b8;
-                margin-bottom: 15px;
-                text-align: center;
-            }
-
-            .match-details {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-                margin-top: 15px;
-            }
-
-            .match-field {
-                background: #f8f9fa;
-                padding: 12px;
-                border-radius: 8px;
-                border: 1px solid #e9ecef;
-            }
-
-            .field-name {
-                font-weight: 600;
-                font-size: 0.9em;
-                color: #6c757d;
-                margin-bottom: 5px;
-            }
-
-            .field-value {
-                color: #2c3e50;
-                font-weight: 500;
-            }
-
-            .data-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 20px;
-                margin-top: 20px;
-            }
-
-            .data-item {
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                border-left: 4px solid #4facfe;
-            }
-
-            .data-label {
-                font-weight: 600;
-                color: #2c3e50;
-                margin-bottom: 8px;
-                font-size: 0.95em;
-            }
-
-            .data-value {
-                color: #495057;
-                font-size: 1.05em;
-            }
-
-            .action-buttons {
-                text-align: center;
-                margin-top: 40px;
-                padding-top: 30px;
-                border-top: 1px solid #e9ecef;
-            }
-
-            .btn {
-                display: inline-block;
-                padding: 12px 30px;
-                margin: 0 10px;
-                border-radius: 25px;
-                text-decoration: none;
-                font-weight: 600;
-                transition: all 0.3s ease;
-                border: none;
-                cursor: pointer;
-            }
-
-            .btn-primary {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            }
-
-            .btn-primary:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-            }
-
-            .btn-secondary {
-                background: #6c757d;
-                color: white;
-            }
-
-            .btn-secondary:hover {
-                background: #5a6268;
-                transform: translateY(-2px);
-            }
-
-            @media (max-width: 768px) {
-                body {
-                    padding: 10px;
-                }
-
-                .main-container {
-                    border-radius: 15px;
-                }
-
-                .header {
-                    padding: 20px;
-                }
-
-                .header h1 {
-                    font-size: 1.8em;
-                }
-
-                .results-content {
-                    padding: 20px;
-                }
-
-                .match-details {
-                    grid-template-columns: 1fr;
-                }
-
-                .data-grid {
-                    grid-template-columns: 1fr;
-                }
-
-                .btn {
-                    display: block;
-                    margin: 10px 0;
-                }
-            }
-            .prediction-title {
-                font-size: 1.3em;
-                font-weight: bold;
-                margin-bottom: 15px;
-            }
-            .prediction-message {
-                margin-bottom: 10px;
-                line-height: 1.5;
-            }
-            .prediction-probability {
-                font-size: 0.9em;
-                opacity: 0.8;
-            }
-            .similarity-container {
-                margin: 30px 0;
-                padding: 25px;
-                background-color: #f8f9fa;
-                border: 2px solid #007bff;
-                border-radius: 8px;
-            }
-            .similarity-title {
-                font-size: 1.3em;
-                font-weight: bold;
-                margin-bottom: 15px;
-                color: #007bff;
-            }
-            .best-match {
-                background-color: #e3f2fd;
-                padding: 15px;
-                border-radius: 6px;
-                margin-bottom: 20px;
-            }
-            .similarity-score {
-                font-size: 1.1em;
-                font-weight: bold;
-                color: #1976d2;
-                margin-bottom: 10px;
-            }
-            .match-details {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 10px;
-                margin-top: 10px;
-            }
-            .match-field {
-                background-color: white;
-                padding: 8px 12px;
-                border-radius: 4px;
-                border: 1px solid #e0e0e0;
-            }
-            .field-name {
-                font-weight: bold;
-                font-size: 0.9em;
-                color: #666;
-            }
-            .field-value {
-                color: #333;
-                margin-top: 2px;
-            }
-            .top-matches {
-                margin-top: 20px;
-            }
-            .match-item {
-                background-color: #f5f5f5;
-                padding: 10px;
-                margin-bottom: 10px;
-                border-radius: 4px;
-                border-left: 4px solid #007bff;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="main-container">
-            <!-- Header Section -->
-            <div class="header">
-                <h1>🎯 Hasil Analisis Kesehatan Mental</h1>
-                <p>Laporan Komprehensif Berdasarkan AI dan Analisis Data</p>
-            </div>
-
-            <div class="results-content">
-                <!-- Prediction Results Section -->
-                """ + (f"""
-                <div class="prediction-container prediction-{prediction_result.get('prediction', 'error').lower()}">
-                    <div class="prediction-title">
-                        🧠 Hasil Prediksi Depresi
-                    </div>
-                    <div class="prediction-message">
-                        <strong>Prediksi:</strong> {prediction_result.get('prediction', 'Tidak Diketahui')}
-                    </div>
-                    <div class="prediction-message">
-                        {prediction_result.get('message', 'Tidak ada prediksi tersedia')}
-                    </div>
-                    {f'<div class="prediction-probability">Tingkat Kepercayaan: {prediction_result.get("probability", 0):.1f}%</div>' if prediction_result.get('probability', 0) > 0 else ''}
-                </div>
-                """ if prediction_result else "") + """
-
-            <!-- Similarity Analysis Section -->
-            """ + (f"""
-            <div class="similarity-container">
-                <div class="similarity-title">
-                    📊 Analisis Kasus Serupa
-                </div>
-                <div class="best-match">
-                    <div class="similarity-score">
-                        Kecocokan Terbaik: {similarity_result.get('best_similarity', 0):.1f}% Kemiripan
-                    </div>
-                    <div class="match-details">
-                        <div class="match-field">
-                            <div class="field-name">Jenis Kelamin</div>
-                            <div class="field-value">{similarity_result.get('best_match', {}).get('gender', 'N/A')}</div>
-                        </div>
-                        <div class="match-field">
-                            <div class="field-name">Usia</div>
-                            <div class="field-value">{similarity_result.get('best_match', {}).get('age', 'N/A')}</div>
-                        </div>
-                        <div class="match-field">
-                            <div class="field-name">Tekanan Kerja</div>
-                            <div class="field-value">{similarity_result.get('best_match', {}).get('work_pressure', 'N/A')}</div>
-                        </div>
-                        <div class="match-field">
-                            <div class="field-name">Kepuasan Kerja</div>
-                            <div class="field-value">{similarity_result.get('best_match', {}).get('job_satisfaction', 'N/A')}</div>
-                        </div>
-                        <div class="match-field">
-                            <div class="field-name">Durasi Tidur</div>
-                            <div class="field-value">{similarity_result.get('best_match', {}).get('sleep_duration', 'N/A')}</div>
-                        </div>
-                        <div class="match-field">
-                            <div class="field-name">Jam Kerja</div>
-                            <div class="field-value">{similarity_result.get('best_match', {}).get('work_hours', 'N/A')}</div>
-                        </div>
-                        <div class="match-field" style="background-color: {'#ffebee' if similarity_result.get('best_match', {}).get('depression') == 'Positif' else '#e8f5e8'};">
-                            <div class="field-name">Status Depresi</div>
-                            <div class="field-value" style="color: {'#d32f2f' if similarity_result.get('best_match', {}).get('depression') == 'Positif' else '#388e3c'}; font-weight: bold;">
-                                {similarity_result.get('best_match', {}).get('depression', 'N/A')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align: center; color: #666; font-size: 0.9em;">
-                    Dianalisis terhadap {similarity_result.get('total_cases', 0)} kasus dari dataset
-                </div>
-            </div>
-            """ if similarity_result.get('success') else f"""
-            <div class="similarity-container">
-                <div class="similarity-title">📊 Analisis Kasus Serupa</div>
-                <div style="color: #d32f2f; text-align: center; padding: 20px;">
-                    {similarity_result.get('message', 'Analisis kemiripan tidak tersedia')}
-                </div>
-            </div>
-            """ if similarity_result else "") + """
-
-                <!-- Form Data Summary Section -->
-                <div class="section">
-                    <div class="section-title">
-                        📋 Ringkasan Data Anda
-                    </div>
-                    <div class="data-grid">
-    """
-
-    # Field labels mapping with icons
+    # Data summary for table
     field_labels = {
-        'gender': ('👤', 'Jenis Kelamin'),
-        'age': ('🎂', 'Usia'),
-        'work_pressure': ('💼', 'Tekanan Kerja'),
-        'job_satisfaction': ('😊', 'Kepuasan Kerja'),
-        'financial_stress': ('💰', 'Stres Keuangan'),
-        'sleep_duration': ('😴', 'Durasi Tidur'),
-        'dietary_habits': ('🍽️', 'Kebiasaan Makan'),
-        'suicidal_thoughts': ('🧠', 'Pikiran Bunuh Diri'),
-        'work_hours': ('⏰', 'Jam Kerja'),
-        'family_history_of_mental_illness': ('👨‍👩‍👧‍👦', 'Riwayat Keluarga')
+        'gender': 'Jenis Kelamin',
+        'age': 'Usia',
+        'work_pressure': 'Bagaimana Anda menilai tingkat tekanan dalam pekerjaan Anda akhir-akhir ini?',
+        'job_satisfaction': 'Seberapa puas Anda dengan pekerjaan Anda saat ini?',
+        'financial_stress': 'Bagaimana perasaan Anda mengenai kondisi keuangan Anda saat ini?',
+        'sleep_duration': 'Rata-rata, berapa jam tidur Anda dalam semalam?',
+        'dietary_habits': 'Bagaimana Anda menggambarkan pola makan Anda sehari-hari?',
+        'suicidal_thoughts': 'Apakah Anda pernah memiliki pikiran untuk bunuh diri?',
+        'work_hours': 'Rata-rata, berapa jam kerja yang Anda habiskan dalam sehari?',
+        'family_history_of_mental_illness': 'Apakah ada anggota keluarga Anda yang memiliki riwayat gangguan kesehatan mental?'
     }
-
+    data_summary = []
     for field_name, field_value in form_data.items():
-        icon, label = field_labels.get(field_name, ('📝', field_name.title()))
-
-        # Convert database values to display values
+        label = field_labels.get(field_name, field_name.title())
+        # Convert database values to display values sesuai helper & forms.py
         if field_name == 'gender':
             display_value = get_gender_display(field_value)
-        elif field_name in ['work_pressure', 'job_satisfaction', 'financial_stress']:
+        elif field_name == 'work_pressure':
             display_value = get_pressure_display(field_value)
+        elif field_name == 'job_satisfaction':
+            display_value = get_satisfaction_display(field_value)
+        elif field_name == 'financial_stress':
+            display_value = get_financial_stress_display(field_value)
         elif field_name == 'sleep_duration':
             display_value = get_sleep_duration_display(field_value)
         elif field_name == 'dietary_habits':
             display_value = get_dietary_habits_display(field_value)
-        elif field_name in ['suicidal_thoughts', 'family_history_of_mental_illness']:
-            display_value = get_yes_no_display(field_value)
+        elif field_name == 'suicidal_thoughts':
+            display_value = get_pernah_tidak_display(field_value)
+        elif field_name == 'family_history_of_mental_illness':
+            display_value = get_ada_tidak_display(field_value)
         else:
             display_value = field_value
-
-        html_content += f"""
-                        <div class="data-item">
-                            <div class="data-label">{icon} {label}</div>
-                            <div class="data-value">{display_value}</div>
-                        </div>
-        """
-
-    html_content += """
-                    </div>
-                </div>
-    """
-
-    # Add submission time if available
-    if submission_time:
-        html_content += f"""
-                <div class="section">
-                    <div class="section-title">⏰ Waktu Pengiriman</div>
-                    <div style="text-align: center; font-size: 1.1em; color: #495057;">
-                        {submission_time.strftime('%d %B %Y, %H:%M:%S')} WIB
-                    </div>
-                </div>
-        """
-
-    # Add navigation links based on user authentication
-    html_content += """
-                <div class="action-buttons">
-    """
-
-    if request.user.is_authenticated:
-        html_content += f"""
-                    <a href="/pred/" class="btn btn-primary">🔄 Analisis Lagi</a>
-                    <a href="/pred/history/" class="btn btn-secondary">📋 Lihat Riwayat</a>
-                    {f'<a href="/pred/admin/dashboard/" class="btn btn-secondary">⚙️ Dashboard Admin</a>' if is_admin(request.user) else f'<a href="/pred/admin/dashboard/" class="btn btn-secondary">🔬 Dashboard Ahli</a>' if is_expert(request.user) else ''}
-        """
-    else:
-        html_content += """
-                    <a href="/pred/" class="btn btn-primary">🔄 Analisis Lagi</a>
-                    <a href="/pred/login/" class="btn btn-secondary">🔐 Masuk untuk Riwayat</a>
-        """
-
-    html_content += """
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 0.9em; border-top: 1px solid #e9ecef;">
-                <p>🔒 Hasil ini bersifat rahasia dan hanya untuk referensi awal</p>
-                <p style="margin-top: 5px;">⚠️ Konsultasikan dengan profesional kesehatan mental untuk diagnosis yang akurat</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+        data_summary.append({'label': label, 'value': display_value})
 
     # Clear the session data after displaying
     if 'form_data' in request.session:
         del request.session['form_data']
 
-    return HttpResponse(html_content)
+    context = {
+        'diagnosis_result_text': diagnosis_result_text,
+        'diagnosis_result_desc': diagnosis_result_desc,
+        'data_summary': data_summary,
+        'similarity_result': similarity_result,
+        'submission_time': submission_time,
+    }
+    return render(request, 'diagnosis_result.html', context)
 
 
 @login_required
@@ -2184,7 +1779,7 @@ def expert_reuse_data(request, submission_id):
             'work_hours': submission.work_hours,
             'financial_stress': submission.financial_stress,
             'family_history_of_mental_illness': int(submission.family_history_of_mental_illness),
-            'depression': 1 if submission.prediction_result == 'Positive' else 0  # Use ML prediction as ground truth
+            'depression': 1 if submission.prediction_result.lower() in ['positif', 'positive'] else 0
         }
 
         # Add to dataset
@@ -2283,7 +1878,7 @@ def retrain_model(dataset_path, model_path):
 
 
     # Retrain model (simple SVM, adjust as needed)
-    model = SVC(probability=True, kernel='linear', random_state=42, gamma=1, C=100)
+    model = SVC(probability=True, kernel='linear', random_state=42, gamma=1, C=100, class_weight='balanced')
     model.fit(X_train_scaled, y_train)
     
     joblib.dump(model, model_path)

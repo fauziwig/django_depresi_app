@@ -47,9 +47,14 @@ class MyForm(forms.Form):
         ('2', 'Tidak Sehat'),
     ]   
 
-    YES_NO_CHOICES = [
-        ('1', 'Ya'),
-        ('0', 'Tidak'),
+    PERNAH_TIDAK_CHOICES = [
+        ('1', 'Pernah'),
+        ('0', 'Tidak Pernah'),
+    ]
+
+    ADA_TIDAK_CHOICES = [
+        ('1', 'Ada'),
+        ('0', 'Tidak Ada'),
     ]
 
     # Form fields
@@ -71,48 +76,48 @@ class MyForm(forms.Form):
 
     work_pressure = forms.ChoiceField(
         choices=PRESSURE_CHOICES,
-        label="Tekanan Kerja",
+        label="Bagaimana Anda menilai tingkat tekanan dalam pekerjaan Anda akhir-akhir ini?",
         required=True,
         widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     job_satisfaction = forms.ChoiceField(
         choices=SATISFACTION_CHOICES,
-        label="Kepuasan Kerja",
+        label="Seberapa puas Anda dengan pekerjaan Anda saat ini?",
         required=True,
         widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     financial_stress = forms.ChoiceField(
         choices=STRESS_FINANCIAL_CHOICES,
-        label="Stres Keuangan",
+        label="Bagaimana perasaan Anda mengenai kondisi keuangan Anda saat ini?",
         required=True,
         widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     sleep_duration = forms.ChoiceField(
         choices=SLEEP_DURATION_CHOICES,
-        label="Durasi Tidur",
+        label="Rata-rata, berapa jam tidur Anda dalam semalam?",
         required=True,
         widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     dietary_habits = forms.ChoiceField(
         choices=DIETARY_HABITS_CHOICES,
-        label="Kebiasaan Makan",
+        label="Bagaimana Anda menggambarkan pola makan Anda sehari-hari?",
         required=True,
         widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     suicidal_thoughts = forms.ChoiceField(
-        choices=YES_NO_CHOICES,
+        choices=PERNAH_TIDAK_CHOICES,
         label="Apakah Anda pernah memiliki pikiran untuk bunuh diri?",
         required=True,
         widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )
 
     work_hours = forms.IntegerField(
-        label="Jam Kerja",
+        label="Rata-rata, berapa jam kerja yang Anda habiskan dalam sehari?",
         required=True,
         widget=forms.NumberInput(attrs={
             'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
@@ -121,8 +126,8 @@ class MyForm(forms.Form):
     )
 
     family_history_of_mental_illness = forms.ChoiceField(
-        choices=YES_NO_CHOICES,
-        label="Riwayat Keluarga Penyakit Mental",
+        choices=ADA_TIDAK_CHOICES,
+        label="Apakah ada anggota keluarga Anda yang memiliki riwayat gangguan kesehatan mental?",
         required=True,
         widget=forms.RadioSelect(attrs={'class': 'radio-group'})
     )

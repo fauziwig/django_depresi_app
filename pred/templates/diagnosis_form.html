@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Form Diagnosis - DepresiCare{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold">Formulir <span style="color:#C084FC;">Diagnosis</span></h1>
+        <p class="lead">Jawablah beberapa pertanyaan berikut sejujur mungkin.</p>
+    </div>
+
+    <div class="col-md-10 mx-auto">
+        <div class="card border-dark" style="border-radius:16px;">
+            <div class="card-body p-4 p-md-5">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Gender -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.gender.label }}</label>
+                        <div id="gender_choices">
+                            {% for radio in form.gender %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.gender.errors %}
+                            <div class="text-danger mt-2">{{ form.gender.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Age -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.age.label }}</label>
+                        {{ form.age }}
+                        {% if form.age.errors %}
+                            <div class="text-danger mt-2">{{ form.age.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Work Hours -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.work_hours.label }}</label>
+                        {{ form.work_hours }}
+                        {% if form.work_hours.errors %}
+                            <div class="text-danger mt-2">{{ form.work_hours.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Sleep Duration -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.sleep_duration.label }}</label>
+                        <div id="sleep_duration_choices">
+                            {% for radio in form.sleep_duration %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.sleep_duration.errors %}
+                            <div class="text-danger mt-2">{{ form.sleep_duration.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tekanan Kerja -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.work_pressure.label }}</label>
+                        <div id="pressure_choices">
+                            {% for radio in form.work_pressure %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.pressure.errors %}
+                            <div class="text-danger mt-2">{{ form.pressure.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Kepuasan Kerja -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.job_satisfaction.label }}</label>
+                        <div id="job_satisfaction_choices">
+                            {% for radio in form.job_satisfaction %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.job_satisfaction.errors %}
+                            <div class="text-danger mt-2">{{ form.job_satisfaction.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Kondisi Keuangan -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.financial_stress.label }}</label>
+                        <div id="eating_pattern_choices">
+                            {% for radio in form.financial_stress %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.financial_stress.errors %}
+                            <div class="text-danger mt-2">{{ form.financial_stress.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Pola Makan -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.dietary_habits.label }}</label>
+                        <div id="eating_pattern_choices">
+                            {% for radio in form.dietary_habits %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.dietary_habits.errors %}
+                            <div class="text-danger mt-2">{{ form.dietary_habits.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Pikiran Bunuh Diri -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.suicidal_thoughts.label }}</label>
+                        <div id="suicidal_thoughts_choices">
+                            {% for radio in form.suicidal_thoughts %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.suicidal_thoughts.errors %}
+                            <div class="text-danger mt-2">{{ form.suicidal_thoughts.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Riwayat Keluarga -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.family_history_of_mental_illness.label }}</label>
+                        <div id="family_history_choices">
+                            {% for radio in form.family_history_of_mental_illness %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.family_history_of_mental_illness.errors %}
+                            <div class="text-danger mt-2">{{ form.family_history_of_mental_illness.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-lg" style="background:#C084FC;color:#fff;">Lihat Hasil Diagnosis</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

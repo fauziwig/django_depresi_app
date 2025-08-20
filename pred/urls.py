@@ -4,10 +4,11 @@ from . import views
 
 urlpatterns = [
     path("", views.landing_view, name="landing_view"),
-    path("pred/form/", views.my_view, name="my_view"),
+    path("diagnosis/", views.diagnosis, name="diagnosis"),
     path("pred/success/", views.success_view, name="success_url"),
-    path("pred/results/", views.results_view, name="results_url"),
+    path("diagnosis/results/", views.results_view, name="results_url"),
     path("pred/history/", views.history_view, name="history_url"),
+    
     path("pred/login/", views.login_view, name="login_url"),
     path("pred/register/", views.register_view, name="register_url"),
     path("pred/logout/", views.logout_view, name="logout_url"),
@@ -22,5 +23,5 @@ urlpatterns = [
     path("pred/expert/reuse-data/<int:submission_id>/", views.expert_reuse_data, name="expert_reuse_data"),
 
     # API URLs
-    path("pred/api/", include("pred.api_urls")),
+    # path("pred/api/", include("pred.api_urls")),
 ]
