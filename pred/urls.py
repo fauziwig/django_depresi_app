@@ -5,13 +5,14 @@ from . import views
 urlpatterns = [
     path("", views.landing_view, name="landing_view"),
     path("diagnosis/", views.diagnosis, name="diagnosis"),
+    path("user/", views.user, name="user"),
     path("pred/success/", views.success_view, name="success_url"),
     path("diagnosis/results/", views.results_view, name="results_url"),
     path("pred/history/", views.history_view, name="history_url"),
     
-    path("pred/login/", views.login_view, name="login_url"),
-    path("pred/register/", views.register_view, name="register_url"),
-    path("pred/logout/", views.logout_view, name="logout_url"),
+    # path("pred/login/", views.login_view, name="login_url"),
+    # path("pred/register/", views.register_view, name="register_url"),
+    # path("pred/logout/", views.logout_view, name="logout_url"),
 
     # Admin URLs
     path("pred/admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),

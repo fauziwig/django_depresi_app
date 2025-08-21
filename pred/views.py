@@ -32,6 +32,20 @@ def landing_view(request):
     """
     return render(request, 'landing.html')
 
+def user(request):
+    if not request.user.is_authenticated:
+        return redirect('/admin/login/?next=/profil/')  # atau ke halaman login Anda
+
+    # Ambil riwayat diagnosis user yang sedang login
+    diagnosis_history = FormSubmission.objects.filter(user=request.user).order_by('-submitted_at')
+
+    # Siapkan data untuk template
+    context = {
+        'user': request.user,
+        'diagnosis_history': diagnosis_history,
+    }
+    return render(request, 'user.html', context)
+
 # Helper function to check if user has admin-level access (admin or expert)
 def has_admin_access(user):
     return is_admin(user) or is_expert(user)
@@ -393,6 +407,7 @@ def find_similar_cases(form_data):
             'error': str(e),
             'message': 'Tidak dapat menghitung kemiripan dengan dataset'
         }
+
 
 def diagnosis(request):
     template = loader.get_template("diagnosis_form.html")
@@ -1060,41 +1075,41 @@ def history_view(request):
     return HttpResponse(html_content)
 
 
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            # Redirect to history page after successful login
-            return redirect('history_url')
-        else:
-            messages.error(request, 'Username atau password salah.')
+# def login_view(request):
+#     if request.method == 'POST':
+#         username = request.POST['username']
+#         password = request.POST['password']
+#         user = authenticate(request, username=username, password=password)
+#         if user is not None:
+#             login(request, user)
+#             # Redirect to history page after successful login
+#             return redirect('history_url')
+#         else:
+#             messages.error(request, 'Username atau password salah.')
 
-    return render(request, 'login.html')
-
-
-def register_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Akun berhasil dibuat untuk {username}!')
-            # Auto login after registration
-            login(request, user)
-            return redirect('history_url')
-    else:
-        form = CustomUserCreationForm()
-
-    return render(request, 'register.html', {'form': form})
+#     return render(request, 'login.html')
 
 
-def logout_view(request):
-    logout(request)
-    messages.success(request, 'Anda telah berhasil logout.')
-    return redirect('my_view')
+# def register_view(request):
+#     if request.method == 'POST':
+#         form = CustomUserCreationForm(request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             username = form.cleaned_data.get('username')
+#             messages.success(request, f'Akun berhasil dibuat untuk {username}!')
+#             # Auto login after registration
+#             login(request, user)
+#             return redirect('history_url')
+#     else:
+#         form = CustomUserCreationForm()
+
+#     return render(request, 'register.html', {'form': form})
+
+
+# def logout_view(request):
+#     logout(request)
+#     messages.success(request, 'Anda telah berhasil logout.')
+#     return redirect('my_view')
 
 
 @user_passes_test(has_admin_access)

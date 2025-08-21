@@ -70,6 +70,17 @@
             color: #888;
             border-top: 1px solid #e5e7eb;
         }
+        .halo-admin-btn {
+            background: #C084FC;
+            color: #fff;
+            border-radius: 20px;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: background 0.2s;
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -88,21 +99,26 @@
                         <a class="nav-link {% if active_page == 'landing_view' %}active{% endif %}" href="{% url 'landing_view' %}">Beranda</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#penting">Mengapa Penting</a>
+                        <a class="nav-link" href="{% url 'landing_view' %}#penting">Mengapa Penting</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#gejala">Gejala</a>
+                        <a class="nav-link" href="{% url 'landing_view' %}#gejala">Gejala</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'diagnosis' %}active{% endif %}" href="{% url 'diagnosis' %}">Diagnosis</a>
                     </li>
-                    
                 </ul>
                 <div class="d-flex gap-2">
-                    {% comment %} <a href="{% url 'login' %}" class="btn btn-link fw-semibold text-dark">Masuk</a> {% endcomment %}
-                    {% comment %} <a href="{% url 'register' %}" class="btn fw-semibold" style="background:#C084FC;color:#fff;">Daftar</a> {% endcomment %}
-                    <a href="#login" class="btn btn-link fw-semibold text-dark">Masuk</a>
-                    <a href="#register" class="btn fw-semibold" style="background:#C084FC;color:#fff;">Daftar</a>
+                    {% if user.is_authenticated %}
+                        <form action="{% if user.is_staff or user.username == 'admin' %}/admin/{% else %}{% url 'profil' %}{% endif %}" method="get" style="display:inline;">
+                            <button type="submit" class="halo-admin-btn">
+                                Halo, {{ user.username|default:"Pengguna" }}
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="/admin/login" class="btn btn-link fw-semibold text-dark">Masuk</a>
+                        <a href="#register" class="btn fw-semibold" style="background:#C084FC;color:#fff;">Daftar</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
