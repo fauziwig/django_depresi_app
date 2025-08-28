@@ -110,14 +110,12 @@
                 </ul>
                 <div class="d-flex gap-2">
                     {% if user.is_authenticated %}
-                        <form action="{% if user.is_staff or user.username == 'admin' %}/admin/{% else %}{% url 'profil' %}{% endif %}" method="get" style="display:inline;">
-                            <button type="submit" class="halo-admin-btn">
-                                Halo, {{ user.username|default:"Pengguna" }}
-                            </button>
-                        </form>
+                        <a href="{% url 'user' %}" class="btn btn-primary halo-admin-btn">
+                            Halo, {{ user.username|default:"Pengguna" }}
+                        </a>
                     {% else %}
-                        <a href="/admin/login" class="btn btn-link fw-semibold text-dark">Masuk</a>
-                        <a href="#register" class="btn fw-semibold" style="background:#C084FC;color:#fff;">Daftar</a>
+                        <a href="/login" class="btn btn-link fw-semibold text-dark">Masuk</a>
+                        <a href="/register" class="btn fw-semibold" style="background:#C084FC;color:#fff;">Daftar</a>
                     {% endif %}
                 </div>
             </div>

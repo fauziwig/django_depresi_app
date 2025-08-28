@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from .forms import MyForm, CustomUserCreationForm
 from django.template import loader
@@ -15,6 +15,8 @@ import os
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from django.conf import settings
+from django.views.decorators.http import require_POST
+from django.urls import reverse
 
 # Helper function to check if user is admin
 def is_admin(user):
@@ -32,19 +34,111 @@ def landing_view(request):
     """
     return render(request, 'landing.html')
 
+def get_data_summary_for_submission(submission):
+    """
+    Mengembalikan list of dict berisi label pertanyaan dan jawaban human-readable
+    untuk satu diagnosis submission, sesuai forms.py.
+    """
+    # Ambil data jawaban (misal field JSON/dict di model)
+    # Misal: submission.form_data adalah dict hasil pengisian form
+    # Ambil data jawaban (misal field JSON/dict di model)
+    form_data = submission.form_data if hasattr(submission, 'form_data') and submission.form_data else {}
+
+    # PATCH: Jika form_data kosong, ambil dari field model (untuk data lama)
+    if not form_data:
+        form_data = {
+            'gender': getattr(submission, 'gender', ''),
+            'age': getattr(submission, 'age', ''),
+            'work_hours': getattr(submission, 'work_hours', ''),
+            'sleep_duration': getattr(submission, 'sleep_duration', ''),
+            'work_pressure': getattr(submission, 'work_pressure', ''),
+            'job_satisfaction': getattr(submission, 'job_satisfaction', ''),
+            'financial_stress': getattr(submission, 'financial_stress', ''),
+            'dietary_habits': getattr(submission, 'dietary_habits', ''),
+            'suicidal_thoughts': getattr(submission, 'suicidal_thoughts', ''),
+            'family_history_of_mental_illness': getattr(submission, 'family_history_of_mental_illness', ''),
+        }
+
+    print("DEBUG form_data:", form_data)
+    
+    # Label pertanyaan sesuai forms.py
+    field_labels = {
+        'gender': 'Jenis Kelamin',
+        'age': 'Usia',
+        'work_hours': 'Rata-rata, berapa jam kerja yang Anda habiskan dalam sehari?',
+        'sleep_duration': 'Rata-rata, berapa jam tidur Anda dalam semalam?',
+        'work_pressure': 'Bagaimana Anda menilai tingkat tekanan dalam pekerjaan Anda akhir-akhir ini?',
+        'job_satisfaction': 'Seberapa puas Anda dengan pekerjaan Anda saat ini?',
+        'financial_stress': 'Bagaimana perasaan Anda mengenai kondisi keuangan Anda saat ini?',
+        'dietary_habits': 'Bagaimana Anda menggambarkan pola makan Anda sehari-hari?',
+        'suicidal_thoughts': 'Apakah Anda pernah memiliki pikiran untuk bunuh diri?',
+        'family_history_of_mental_illness': 'Apakah ada anggota keluarga Anda yang memiliki riwayat gangguan kesehatan mental?',
+    }
+
+    # Helper display sesuai forms.py
+    from .views import (
+        get_gender_display, get_pressure_display, get_satisfaction_display,
+        get_financial_stress_display, get_sleep_duration_display,
+        get_dietary_habits_display, get_pernah_tidak_display, get_ada_tidak_display
+    )
+
+    summary = []
+    for field in [
+        'gender', 'age', 'work_hours', 'sleep_duration', 'work_pressure',
+        'job_satisfaction', 'financial_stress', 'dietary_habits',
+        'suicidal_thoughts', 'family_history_of_mental_illness'
+    ]:
+        label = field_labels.get(field, field)
+        value = form_data.get(field, '')
+        # Mapping ke display
+        if field == 'gender':
+            display = get_gender_display(value)
+        elif field == 'work_pressure':
+            display = get_pressure_display(value)
+        elif field == 'job_satisfaction':
+            display = get_satisfaction_display(value)
+        elif field == 'financial_stress':
+            display = get_financial_stress_display(value)
+        elif field == 'sleep_duration':
+            display = get_sleep_duration_display(value)
+        elif field == 'dietary_habits':
+            display = get_dietary_habits_display(value)
+        elif field == 'suicidal_thoughts':
+            display = get_pernah_tidak_display(value)
+        elif field == 'family_history_of_mental_illness':
+            display = get_ada_tidak_display(value)
+        else:
+            display = value
+        summary.append({'label': label, 'value': display})
+    return summary
+
+def get_result_text_for_submission(submission):
+    """
+    Mengembalikan string hasil diagnosis untuk satu submission,
+    misal: 'Terindikasi Mengalami Depresi (Diagnosis : 1)' atau 'Tidak Terindikasi Mengalami Depresi (Diagnosis : 0)'
+    """
+    # Asumsi: submission.prediction_result berisi 'Positif' atau 'Negatif'
+    if hasattr(submission, 'prediction_result'):
+        if str(submission.prediction_result).lower() == 'positif':
+            return 'Terindikasi Mengalami Depresi (Diagnosis : 1)'
+        elif str(submission.prediction_result).lower() == 'negatif':
+            return 'Tidak Terindikasi Mengalami Depresi (Diagnosis : 0)'
+        else:
+            return str(submission.prediction_result)
+    return 'Tidak Diketahui'
+
 def user(request):
-    if not request.user.is_authenticated:
-        return redirect('/admin/login/?next=/profil/')  # atau ke halaman login Anda
-
-    # Ambil riwayat diagnosis user yang sedang login
     diagnosis_history = FormSubmission.objects.filter(user=request.user).order_by('-submitted_at')
-
-    # Siapkan data untuk template
+    print("DEBUG diagnosis_history:",diagnosis_history)
+    for diag in diagnosis_history:
+        diag.data_summary = get_data_summary_for_submission(diag)
+        diag.result_text = get_result_text_for_submission(diag)
     context = {
         'user': request.user,
         'diagnosis_history': diagnosis_history,
     }
     return render(request, 'user.html', context)
+
 
 # Helper function to check if user has admin-level access (admin or expert)
 def has_admin_access(user):
@@ -361,10 +455,10 @@ def find_similar_cases(form_data):
                 'job_satisfaction': get_pressure_display(match_data['job_satisfaction']),
                 'sleep_duration': get_sleep_duration_display(match_data['sleep_duration']),
                 'dietary_habits': get_dietary_habits_display(match_data['dietary_habits']),
-                'suicidal_thoughts': get_yes_no_display(match_data['suicidal_thoughts']),
+                'suicidal_thoughts': get_pernah_tidak_display(match_data['suicidal_thoughts']),
                 'work_hours': int(match_data['work_hours']),
                 'financial_stress': get_pressure_display(match_data['financial_stress']),
-                'family_history': get_yes_no_display(match_data['family_history_of_mental_illness']),
+                'family_history': get_ada_tidak_display(match_data['family_history_of_mental_illness']),
                 'depression': 'Positif' if match_data['depression'] == 1 else 'Negatif'
             })
 
@@ -491,6 +585,7 @@ def diagnosis(request):
                 if 'best_match' in similarity_result:
                     submission.similar_case_id = int(similarity_result.get('best_match_idx', 0))
 
+            submission.form_data = form.cleaned_data 
             submission.save()
 
             # Store form data, prediction result, and similarity result in session
@@ -1014,11 +1109,11 @@ def history_view(request):
                             </div>
                             <div class="data-field">
                                 <div class="field-label">🧠 Pikiran Bunuh Diri</div>
-                                <div class="field-value">{get_yes_no_display(submission.suicidal_thoughts)}</div>
+                                <div class="field-value">{get_pernah_tidak_display(submission.suicidal_thoughts)}</div>
                             </div>
                             <div class="data-field">
                                 <div class="field-label">👨‍👩‍👧‍👦 Riwayat Keluarga</div>
-                                <div class="field-value">{get_yes_no_display(submission.family_history_of_mental_illness)}</div>
+                                <div class="field-value">{get_ada_tidak_display(submission.family_history_of_mental_illness)}</div>
                             </div>
                         </div>
                     </div>
@@ -1075,41 +1170,45 @@ def history_view(request):
     return HttpResponse(html_content)
 
 
-# def login_view(request):
-#     if request.method == 'POST':
-#         username = request.POST['username']
-#         password = request.POST['password']
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             # Redirect to history page after successful login
-#             return redirect('history_url')
-#         else:
-#             messages.error(request, 'Username atau password salah.')
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Redirect to history page after successful login
+            return redirect('/')
+        else:
+            messages.error(request, 'Username atau password salah.')
 
-#     return render(request, 'login.html')
-
-
-# def register_view(request):
-#     if request.method == 'POST':
-#         form = CustomUserCreationForm(request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             username = form.cleaned_data.get('username')
-#             messages.success(request, f'Akun berhasil dibuat untuk {username}!')
-#             # Auto login after registration
-#             login(request, user)
-#             return redirect('history_url')
-#     else:
-#         form = CustomUserCreationForm()
-
-#     return render(request, 'register.html', {'form': form})
+    return render(request, 'login.html')
 
 
-# def logout_view(request):
-#     logout(request)
-#     messages.success(request, 'Anda telah berhasil logout.')
-#     return redirect('my_view')
+def register_view(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            # Logika ini tidak dieksekusi jika form tidak valid
+            user = form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'Akun berhasil dibuat untuk {username}!')
+            login(request, user)
+            return redirect('/')
+        else:
+            # Tambahkan baris ini untuk melihat error di terminal Anda
+            print(form.errors) 
+            # Pesan error juga akan ditampilkan di template jika kode HTMLnya sudah benar
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'register.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'Anda telah berhasil logout.')
+    return redirect('landing_view')
 
 
 @user_passes_test(has_admin_access)
@@ -1768,11 +1867,11 @@ def admin_delete_submission(request, submission_id):
 
     return redirect('admin_all_submissions')
 
-
-@user_passes_test(is_expert)
+@login_required
+@user_passes_test(is_admin)
 def expert_reuse_data(request, submission_id):
     """
-    Expert-only view to reuse form submission data by adding it to the dataset
+    Admin-only view to reuse form submission data by adding it to the dataset
     """
     try:
         submission = FormSubmission.objects.get(id=submission_id)
@@ -1780,7 +1879,7 @@ def expert_reuse_data(request, submission_id):
         # Check if already reused
         if submission.is_reused_in_dataset:
             messages.warning(request, f'Pengiriman #{submission_id} sudah ditambahkan ke dataset pada {submission.reused_at.strftime("%Y-%m-%d %H:%M")} oleh {submission.reused_by.username if submission.reused_by else "Tidak Diketahui"}.')
-            return redirect('history_url')
+            return redirect('user')
 
         # Prepare the data row to add to CSV
         new_row = {
@@ -1817,7 +1916,51 @@ def expert_reuse_data(request, submission_id):
     except Exception as e:
         messages.error(request, f'Kesalahan memproses permintaan: {str(e)}')
 
-    return redirect('history_url')
+    return redirect('user')
+
+
+# @require_POST
+# def expert_reuse_data(request, submission_id):
+#     # Hanya admin/staff yang boleh
+#     if not (request.user.is_superuser or request.user.is_staff):
+#         messages.error(request, "Anda tidak memiliki akses.")
+#         return HttpResponseRedirect(reverse('user'))
+
+#     try:
+#         submission = FormSubmission.objects.get(pk=submission_id)
+#         # Ambil data form_data
+#         form_data = submission.form_data or {}
+#         # Siapkan urutan kolom sesuai dataset
+#         fieldnames = [
+#             'gender', 'age', 'work_hours', 'sleep_duration', 'work_pressure',
+#             'job_satisfaction', 'financial_stress', 'dietary_habits',
+#             'suicidal_thoughts', 'family_history_of_mental_illness', 'prediction_result'
+#         ]
+#         # Siapkan data baris
+#         row = {field: form_data.get(field, '') for field in fieldnames}
+#         row['prediction_result'] = getattr(submission, 'prediction_result', '')
+
+#         # Simpan ke dataset_processed.csv
+#         csv_path = '/home/fauziwig/Documents/coding/django-test/django/djangotutorial/dataset_processed.csv'
+#         write_header = False
+#         try:
+#             with open(csv_path, 'r', newline='') as f:
+#                 pass
+#         except FileNotFoundError:
+#             write_header = True
+
+#         import csv
+#         with open(csv_path, 'a', newline='') as csvfile:
+#             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+#             if write_header:
+#                 writer.writeheader()
+#             writer.writerow(row)
+
+#         messages.success(request, "Data berhasil ditambahkan ke dataset.")
+#     except Exception as e:
+#         messages.error(request, f"Gagal menambah ke dataset: {e}")
+
+#     return HttpResponseRedirect(reverse('user'))
 
 
 def add_to_dataset(new_row):
@@ -1827,9 +1970,7 @@ def add_to_dataset(new_row):
     Returns: True if successful, False otherwise
     """
     try:
-        import pandas as pd
-        import os
-        from django.conf import settings
+        
 
         dataset_path = os.path.join(settings.BASE_DIR, 'dataset_processed.csv')
         counter_path = os.path.join(settings.BASE_DIR, 'retrain_counter.txt')
