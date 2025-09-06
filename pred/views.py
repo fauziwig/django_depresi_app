@@ -17,6 +17,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.urls import reverse
+from django.contrib.auth.forms import UserCreationForm 
+from django.contrib.auth import login # Tambahkan ini jika Anda ingin auto-login
 
 # Helper function to check if user is admin
 def is_admin(user):
@@ -127,14 +129,23 @@ def get_result_text_for_submission(submission):
             return str(submission.prediction_result)
     return 'Tidak Diketahui'
 
+@login_required
 def user(request):
-    diagnosis_history = FormSubmission.objects.filter(user=request.user).order_by('-submitted_at')
-    print("DEBUG diagnosis_history:",diagnosis_history)
+    user_is_admin_or_expert = is_admin(request.user) or is_expert(request.user)
+
+    if user_is_admin_or_expert:
+        # Admin/Expert melihat semua riwayat
+        diagnosis_history = FormSubmission.objects.all().order_by('-submitted_at')
+    else:
+        # Pengguna biasa hanya melihat riwayatnya sendiri
+        diagnosis_history = FormSubmission.objects.filter(user=request.user).order_by('-submitted_at')
+
     for diag in diagnosis_history:
         diag.data_summary = get_data_summary_for_submission(diag)
         diag.result_text = get_result_text_for_submission(diag)
     context = {
         'user': request.user,
+        'user_is_admin_or_expert': user_is_admin_or_expert,
         'diagnosis_history': diagnosis_history,
     }
     return render(request, 'user.html', context)
@@ -612,8 +623,7 @@ def diagnosis(request):
     # return HttpResponse("Hello, world. You're at the pred index.")
 
 
-def success_view(request):
-    return HttpResponse("<h1>Form submitted successfully!</h1><p><a href='/pred/'>Go back to form</a></p>")
+
 
 def results_view(request):
     # Get form data, prediction result, and similarity result from session
@@ -708,466 +718,7 @@ def results_view(request):
     return render(request, 'diagnosis_result.html', context)
 
 
-@login_required
-def history_view(request):
-    # Get form submissions based on user role
-    if is_admin(request.user):
-        # Admin can see all submissions
-        submissions = FormSubmission.objects.all()
-        page_title = "Semua Pengiriman Formulir (Tampilan Admin)"
-        user_info = f"Admin: {request.user.get_full_name() or request.user.username}"
-    elif is_expert(request.user):
-        # Expert can see all submissions
-        submissions = FormSubmission.objects.all()
-        page_title = "Semua Pengiriman Formulir (Tampilan Ahli)"
-        user_info = f"Ahli: {request.user.get_full_name() or request.user.username}"
-    else:
-        # Regular users see only their own submissions
-        submissions = FormSubmission.objects.filter(user=request.user)
-        page_title = "Riwayat Pengiriman Formulir Saya"
-        user_info = f"Selamat datang, {request.user.get_full_name() or request.user.username}!"
 
-    # Create styled HTML to display the history
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="id">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Riwayat Formulir - Sistem Prediksi Depresi</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                min-height: 100vh;
-                padding: 20px;
-            }
-
-            .main-container {
-                max-width: 70%;
-                margin: 0 auto;
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                overflow: hidden;
-            }
-
-            .header {
-                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-                position: relative;
-            }
-
-            .header h1 {
-                font-size: 2.2em;
-                font-weight: 700;
-                margin-bottom: 10px;
-            }
-
-            .header p {
-                font-size: 1.1em;
-                opacity: 0.9;
-            }
-
-            .nav-bar {
-                background: #f8f9fa;
-                padding: 15px 30px;
-                border-bottom: 1px solid #e9ecef;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 15px;
-            }
-
-            .user-info {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-weight: 600;
-                color: #495057;
-            }
-
-            .nav-links {
-                display: flex;
-                gap: 15px;
-                flex-wrap: wrap;
-            }
-
-            .nav-link {
-                text-decoration: none;
-                padding: 8px 16px;
-                border-radius: 25px;
-                font-weight: 500;
-                transition: all 0.3s ease;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                font-size: 0.9em;
-            }
-
-            .nav-link:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            }
-
-            .nav-link.primary { background: #6366f1; color: white; }
-            .nav-link.primary:hover { background: #4f46e5; }
-            .nav-link.success { background: #8b5cf6; color: white; }
-            .nav-link.success:hover { background: #7c3aed; }
-            .nav-link.danger { background: #a855f7; color: white; }
-            .nav-link.danger:hover { background: #9333ea; }
-
-            .content-section {
-                padding: 40px;
-            }
-            .page-title {
-                text-align: center;
-                margin-bottom: 30px;
-                color: #2c3e50;
-            }
-
-            .page-title h2 {
-                font-size: 1.8em;
-                font-weight: 600;
-                margin-bottom: 10px;
-            }
-
-            .page-title p {
-                color: #6c757d;
-                font-size: 1em;
-            }
-
-            .submissions-grid {
-                display: grid;
-                gap: 25px;
-            }
-
-            .submission-card {
-                background: #f8f9fa;
-                border-radius: 15px;
-                padding: 25px;
-                border-left: 5px solid #6366f1;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-                transition: all 0.3s ease;
-            }
-
-            .submission-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            }
-
-            .submission-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-                border-bottom: 2px solid #e9ecef;
-            }
-
-            .submission-id {
-                font-size: 1.2em;
-                font-weight: 600;
-                color: #6366f1;
-            }
-
-            .submission-time {
-                color: #6c757d;
-                font-size: 0.9em;
-                font-style: italic;
-            }
-
-            .submission-data {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-                margin-bottom: 20px;
-            }
-
-            .data-field {
-                background: white;
-                padding: 12px 16px;
-                border-radius: 10px;
-                border: 1px solid #e9ecef;
-                transition: all 0.3s ease;
-            }
-
-            .data-field:hover {
-                border-color: #6366f1;
-                box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
-            }
-
-            .field-label {
-                font-weight: 600;
-                color: #2c3e50;
-                font-size: 0.85em;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 5px;
-            }
-
-            .field-value {
-                color: #495057;
-                font-size: 1em;
-                font-weight: 500;
-            }
-
-            .prediction-result {
-                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                margin-bottom: 15px;
-                text-align: center;
-            }
-
-            .prediction-result.positive {
-                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            }
-
-            .prediction-result.negative {
-                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            }
-
-            .reuse-btn {
-                background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 25px;
-                cursor: pointer;
-                font-size: 0.9em;
-                font-weight: 600;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                transition: all 0.3s ease;
-            }
-
-            .reuse-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-                color: white;
-                text-decoration: none;
-            }
-
-            .no-data {
-                text-align: center;
-                color: #6c757d;
-                font-style: italic;
-                padding: 60px 40px;
-                background: #f8f9fa;
-                border-radius: 15px;
-                margin: 40px 0;
-            }
-
-            .no-data h3 {
-                font-size: 1.5em;
-                margin-bottom: 15px;
-                color: #495057;
-            }
-
-            .no-data p {
-                font-size: 1.1em;
-                margin-bottom: 20px;
-            }
-
-            @media (max-width: 768px) {
-                body {
-                    padding: 10px;
-                }
-
-                .main-container {
-                    border-radius: 15px;
-                }
-
-                .header {
-                    padding: 20px;
-                }
-
-                .header h1 {
-                    font-size: 1.8em;
-                }
-
-                .nav-bar {
-                    padding: 15px 20px;
-                    flex-direction: column;
-                    align-items: stretch;
-                    gap: 10px;
-                }
-
-                .nav-links {
-                    justify-content: center;
-                }
-
-                .content-section {
-                    padding: 30px 20px;
-                }
-
-                .submission-data {
-                    grid-template-columns: 1fr;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="main-container">
-            <!-- Header Section -->
-            <div class="header">
-                <h1>📋 {page_title}</h1>
-                <p>Riwayat dan Analisis Data Formulir</p>
-            </div>
-
-            <!-- Navigation Bar -->
-            <div class="nav-bar">
-                <div class="user-info">
-                    <span>👤</span>
-                    <span>{user_info}</span>
-                </div>
-                <div class="nav-links">
-                    <a href="/pred/" class="nav-link primary">🏠 Formulir Utama</a>
-                    """ + (f'<a href="/pred/admin/dashboard/" class="nav-link success">⚙️ Dashboard Admin</a>' if is_admin(request.user) else f'<a href="/pred/admin/dashboard/" class="nav-link success">🔬 Dashboard Ahli</a>' if is_expert(request.user) else '') + f"""
-                    <a href="/pred/logout/" class="nav-link danger">🚪 Keluar</a>
-                </div>
-            </div>
-
-            <!-- Content Section -->
-            <div class="content-section">
-                <div class="page-title">
-                    <h2>Daftar Pengiriman Formulir</h2>
-                    <p>Lihat dan kelola riwayat pengiriman formulir Anda</p>
-                </div>
-
-                <div class="submissions-grid">
-    """
-
-    if submissions.exists():
-        for submission in submissions:
-            # Convert UTC time to local time using Django's timezone.localtime
-            local_time = timezone.localtime(submission.submitted_at)
-
-            # Determine prediction result class
-            prediction_class = ""
-            if submission.prediction_result == 'Positif':
-                prediction_class = "positive"
-            elif submission.prediction_result == 'Negatif':
-                prediction_class = "negative"
-
-            html_content += f"""
-                    <div class="submission-card">
-                        <div class="submission-header">
-                            <div class="submission-id">📋 Submission #{submission.id}</div>
-                            <div class="submission-time">📅 {local_time.strftime('%d %B %Y, %H:%M')} WIB</div>
-                        </div>
-
-                        <!-- Prediction Result -->
-                        {f'<div class="prediction-result {prediction_class}"><strong>🧠 Hasil Prediksi: {submission.prediction_result}</strong>{f" ({submission.prediction_probability:.1f}%)" if submission.prediction_probability else ""}</div>' if submission.prediction_result else ''}
-
-                            <div class="data-field">
-                                <div class="field-label">👤 Jenis Kelamin</div>
-                                <div class="field-value">{get_gender_display(submission.gender)}</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">🎂 Usia</div>
-                                <div class="field-value">{submission.age} tahun</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">💼 Tekanan Kerja</div>
-                                <div class="field-value">{get_pressure_display(submission.work_pressure)}</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">😊 Kepuasan Kerja</div>
-                                <div class="field-value">{get_pressure_display(submission.job_satisfaction)}</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">💰 Stres Keuangan</div>
-                                <div class="field-value">{get_pressure_display(submission.financial_stress)}</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">😴 Durasi Tidur</div>
-                                <div class="field-value">{get_sleep_duration_display(submission.sleep_duration)}</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">⏰ Jam Kerja</div>
-                                <div class="field-value">{submission.work_hours} jam/hari</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">🍽️ Kebiasaan Makan</div>
-                                <div class="field-value">{get_dietary_habits_display(submission.dietary_habits)}</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">🧠 Pikiran Bunuh Diri</div>
-                                <div class="field-value">{get_pernah_tidak_display(submission.suicidal_thoughts)}</div>
-                            </div>
-                            <div class="data-field">
-                                <div class="field-label">👨‍👩‍👧‍👦 Riwayat Keluarga</div>
-                                <div class="field-value">{get_ada_tidak_display(submission.family_history_of_mental_illness)}</div>
-                            </div>
-                        </div>
-                    </div>
-            """
-
-            # Add similarity score if available
-            if submission.similarity_score:
-                html_content += f"""
-                    <div style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 10px;">
-                        <strong>📊 Skor Kemiripan:</strong> {submission.similarity_score:.1f}% (Kasus #{submission.similar_case_id})
-                    </div>
-                """
-
-            # Add action buttons for experts
-            if is_expert(request.user):
-                if submission.is_reused_in_dataset:
-                    html_content += f"""
-                    <div style="margin-top: 15px; background: #d4edda; padding: 10px; border-radius: 8px; color: #155724; font-weight: bold; text-align: center;">
-                        ✅ Ditambahkan ke Dataset
-                        <br><small>Oleh {submission.reused_by.username if submission.reused_by else "Unknown"} pada {submission.reused_at.strftime("%d %B %Y, %H:%M") if submission.reused_at else "Unknown date"}</small>
-                    </div>
-                    """
-                else:
-                    html_content += f"""
-                    <div style="margin-top: 15px; text-align: center;">
-                        <a href="/pred/expert/reuse-data/{submission.id}/" class="reuse-btn" onclick="return confirm('Apakah Anda yakin ingin menambahkan data pengiriman ini ke dataset? Tindakan ini tidak dapat dibatalkan.')">
-                            🔄 Tambahkan ke Dataset
-                        </a>
-                    </div>
-                    """
-    else:
-        html_content += """
-                <div class="no-data">
-                    <h3>📭 Belum Ada Data</h3>
-                    <p>Tidak ada pengiriman formulir yang ditemukan.</p>
-                    <a href="/pred/" class="reuse-btn">🚀 Buat Formulir Pertama</a>
-                </div>
-        """
-
-    html_content += """
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 0.9em; border-top: 1px solid #e9ecef;">
-                <p>📊 Sistem Prediksi Depresi - Riwayat Data Formulir</p>
-                <p style="margin-top: 5px;">🔒 Data Anda aman dan terlindungi</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-    return HttpResponse(html_content)
 
 
 def login_view(request):
@@ -1177,32 +728,47 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # Redirect to history page after successful login
-            return redirect('/')
+            messages.success(request, f'Selamat datang, {user.username}!') # Gunakan f-string
+            return redirect('landing_view')
         else:
             messages.error(request, 'Username atau password salah.')
 
     return render(request, 'login.html')
 
 
-def register_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            # Logika ini tidak dieksekusi jika form tidak valid
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Akun berhasil dibuat untuk {username}!')
-            login(request, user)
-            return redirect('/')
-        else:
-            # Tambahkan baris ini untuk melihat error di terminal Anda
-            print(form.errors) 
-            # Pesan error juga akan ditampilkan di template jika kode HTMLnya sudah benar
-    else:
-        form = CustomUserCreationForm()
+# def register_view(request):
+#     if request.method == 'POST':
+#         form = CustomUserCreationForm(request.POST)
+#         if form.is_valid():
+#             # Logika ini tidak dieksekusi jika form tidak valid
+#             user = form.save()
+#             username = form.cleaned_data.get('username')
+#             messages.success(request, f'Akun berhasil dibuat untuk {username}!')
+#             login(request, user)
+#             return redirect('landing_view')
+#         else:
+#             # Tambahkan baris ini untuk melihat error di terminal Anda
+#             print(form.errors) 
+#             # Pesan error juga akan ditampilkan di template jika kode HTMLnya sudah benar
+#     else:
+#         form = CustomUserCreationForm()
 
-    return render(request, 'register.html', {'form': form})
+#     return render(request, 'register.html', {'form': form})
+
+
+
+
+def register_view(request):
+    if request.method == "POST": 
+        form = UserCreationForm(request.POST) 
+        if form.is_valid(): 
+            user = form.save() # Simpan user ke dalam variabel
+            messages.success(request, f'Akun berhasil dibuat untuk {user.username}!') # Gunakan f-string
+            # login(request, user) # Opsional: auto-login
+            return redirect("landing_view")
+    else:
+        form = UserCreationForm()
+    return render(request, "register.html", { "form": form })
 
 
 def logout_view(request):
@@ -1596,276 +1162,7 @@ def admin_dashboard(request):
     return HttpResponse(html_content)
 
 
-@user_passes_test(has_admin_access)
-def admin_all_submissions(request):
-    submissions = FormSubmission.objects.all().order_by('-submitted_at')
 
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>All Submissions - Admin</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                max-width: 1200px;
-                margin: 50px auto;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }}
-            .admin-container {{
-                background-color: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }}
-            .header-nav {{
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 30px;
-            }}
-            .back-link {{
-                color: #007bff;
-                text-decoration: none;
-                padding: 10px 15px;
-                border: 1px solid #007bff;
-                border-radius: 4px;
-            }}
-            .submission-table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-            }}
-            .submission-table th,
-            .submission-table td {{
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }}
-            .submission-table th {{
-                background-color: #f8f9fa;
-                font-weight: bold;
-            }}
-            .submission-table tr:hover {{
-                background-color: #f5f5f5;
-            }}
-            .delete-btn {{
-                background-color: #dc3545;
-                color: white;
-                padding: 5px 10px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 12px;
-            }}
-            .delete-btn:hover {{
-                background-color: #c82333;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="admin-container">
-            <div class="header-nav">
-                <a href="/pred/admin/dashboard/" class="back-link">← Back to Dashboard</a>
-                <div style="color: #666;">
-                    Admin: {request.user.get_full_name() or request.user.username}
-                </div>
-            </div>
-
-            <h1>All Form Submissions</h1>
-            <p>Total: {submissions.count()} submissions</p>
-
-            <table class="submission-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Gender</th>
-                        <th>Age</th>
-                        <th>Work Pressure</th>
-                        <th>Job Satisfaction</th>
-                        <th>Prediction</th>
-                        <th>Submitted</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-    """
-
-    for submission in submissions:
-        local_time = timezone.localtime(submission.submitted_at)
-        html_content += f"""
-                    <tr>
-                        <td>#{submission.id}</td>
-                        <td>{get_gender_display(submission.gender)}</td>
-                        <td>{submission.age}</td>
-                        <td>{get_pressure_display(submission.work_pressure)}</td>
-                        <td>{get_pressure_display(submission.job_satisfaction)}</td>
-                        <td style="color: {'#dc3545' if submission.prediction_result == 'Positive' else '#28a745' if submission.prediction_result == 'Negative' else '#6c757d'};">
-                            {submission.prediction_result or 'N/A'}
-                            {f' ({submission.prediction_probability:.0f}%)' if submission.prediction_probability else ''}
-                        </td>
-                        <td>{local_time.strftime('%Y-%m-%d %H:%M')}</td>
-                        <td>
-                            <form method="post" action="/pred/admin/delete-submission/{submission.id}/" style="display: inline;">
-                                <input type="hidden" name="csrfmiddlewaretoken" value="{request.META.get('CSRF_COOKIE', '')}">
-                                <button type="submit" class="delete-btn" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-        """
-
-    html_content += """
-                </tbody>
-            </table>
-        </div>
-    </body>
-    </html>
-    """
-
-    return HttpResponse(html_content)
-
-
-@user_passes_test(is_admin)
-def admin_users(request):
-    users = User.objects.all().order_by('-date_joined')
-
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>User Management - Admin</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                max-width: 1200px;
-                margin: 50px auto;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }}
-            .admin-container {{
-                background-color: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }}
-            .header-nav {{
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 30px;
-            }}
-            .back-link {{
-                color: #007bff;
-                text-decoration: none;
-                padding: 10px 15px;
-                border: 1px solid #007bff;
-                border-radius: 4px;
-            }}
-            .user-table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-            }}
-            .user-table th,
-            .user-table td {{
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }}
-            .user-table th {{
-                background-color: #f8f9fa;
-                font-weight: bold;
-            }}
-            .user-table tr:hover {{
-                background-color: #f5f5f5;
-            }}
-            .admin-badge {{
-                background-color: #dc3545;
-                color: white;
-                padding: 2px 8px;
-                border-radius: 12px;
-                font-size: 12px;
-            }}
-            .staff-badge {{
-                background-color: #ffc107;
-                color: black;
-                padding: 2px 8px;
-                border-radius: 12px;
-                font-size: 12px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="admin-container">
-            <div class="header-nav">
-                <a href="/pred/admin/dashboard/" class="back-link">← Back to Dashboard</a>
-                <div style="color: #666;">
-                    Admin: {request.user.get_full_name() or request.user.username}
-                </div>
-            </div>
-
-            <h1>User Management</h1>
-            <p>Total: {users.count()} users</p>
-
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>Full Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Joined</th>
-                        <th>Last Login</th>
-                    </tr>
-                </thead>
-                <tbody>
-    """
-
-    for user in users:
-        role_badges = []
-        if user.is_superuser:
-            role_badges.append('<span class="admin-badge">Superuser</span>')
-        if user.is_staff:
-            role_badges.append('<span class="staff-badge">Staff</span>')
-
-        role_display = ' '.join(role_badges) if role_badges else 'User'
-
-        html_content += f"""
-                    <tr>
-                        <td>#{user.id}</td>
-                        <td>{user.username}</td>
-                        <td>{user.get_full_name() or '-'}</td>
-                        <td>{user.email or '-'}</td>
-                        <td>{role_display}</td>
-                        <td>{user.date_joined.strftime('%Y-%m-%d')}</td>
-                        <td>{user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never'}</td>
-                    </tr>
-        """
-
-    html_content += """
-                </tbody>
-            </table>
-        </div>
-    </body>
-    </html>
-    """
-
-    return HttpResponse(html_content)
-
-
-@user_passes_test(has_admin_access)
-def admin_delete_submission(request, submission_id):
-    if request.method == 'POST':
-        try:
-            submission = FormSubmission.objects.get(id=submission_id)
-            submission.delete()
-            messages.success(request, f'Submission #{submission_id} has been deleted.')
-        except FormSubmission.DoesNotExist:
-            messages.error(request, 'Submission not found.')
-
-    return redirect('admin_all_submissions')
 
 @login_required
 @user_passes_test(is_admin)

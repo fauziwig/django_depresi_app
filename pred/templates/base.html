@@ -123,6 +123,18 @@
     </nav>
 
     <main>
+        {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}✅ {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}⚠️ {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% block content %}
         {% endblock %}
     </main>

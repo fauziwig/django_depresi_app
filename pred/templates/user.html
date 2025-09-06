@@ -34,12 +34,22 @@
 
     <div class="row justify-content-center mb-4">
         <div class="col-md-8">
-            <div class="fw-semibold mb-2" style="font-size:1.15rem;">Riwayat Diagnosis</div>
+            <div class="fw-semibold mb-2" style="font-size:1.15rem;">
+                {% if user_is_admin_or_expert %}
+                    Riwayat Seluruh Diagnosis
+                {% else %}
+                    Riwayat Diagnosis Anda
+                {% endif %}
+            </div>
             {% if diagnosis_history %}
                 {% for diag in diagnosis_history %}
                 <div class="border rounded mb-4 p-3" style="background:#fff7f7; border:1.5px solid #9e7a7a;">
                     <div class="fw-semibold" style="font-size:1.15rem; margin-bottom:0.5rem;">
-                        Diagnosis {{ diag.submitted_at|date:"j F Y" }}
+                        Diagnosis pada {{ diag.submitted_at|date:"j F Y, H:i" }}
+                        {% if user_is_admin_or_expert %}
+                            <br>
+                            <small class="text-muted" style="font-size: 0.85rem;">Oleh: {{ diag.user.username|default:"Pengguna Tamu" }}</small>
+                        {% endif %}
                     </div>
                     <div class="mb-2" style="font-size:1rem;">
                         {{ diag.result_text|safe }}

@@ -5,7 +5,7 @@ from .models import FormSubmission
 # Register your models here.
 @admin.register(FormSubmission)
 class FormSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'gender', 'age', 'prediction_result', 'prediction_probability', 'similarity_score', 'is_reused_in_dataset', 'submitted_at')
+    list_display = ('id', 'user', 'gender', 'age', 'prediction_result', 'prediction_probability', 'similarity_score', 'is_reused_in_dataset', 'submitted_at')
     list_filter = ('gender', 'work_pressure', 'job_satisfaction', 'financial_stress', 'sleep_duration', 'dietary_habits', 'suicidal_thoughts', 'family_history_of_mental_illness', 'prediction_result', 'is_reused_in_dataset', 'submitted_at')
     search_fields = ('prediction_result',)
     readonly_fields = ('submitted_at', 'prediction_result', 'prediction_probability', 'prediction_message', 'similarity_score', 'similar_case_id', 'is_reused_in_dataset', 'reused_at', 'reused_by')
