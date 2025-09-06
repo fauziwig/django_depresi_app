@@ -122,9 +122,9 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django    .db.models.BigAutoField'
 
 # Authentication settings
-LOGIN_URL = '/pred/login/'
-LOGIN_REDIRECT_URL = '/pred/history/'
-LOGOUT_REDIRECT_URL = '/pred/'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
