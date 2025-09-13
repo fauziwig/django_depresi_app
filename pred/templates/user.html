@@ -60,6 +60,7 @@
                         </button>
                         {% if user.is_superuser or user.is_staff %}
                             <form method="post" action="{% url 'expert_reuse_data' diag.id %}" style="display:inline;">
+                            <form method="post" action="{% url 'expert_reuse_data' diag.id %}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin akan memasukkan data kasus diagnosis ini ke dataset?');">
                                 {% csrf_token %}
                                 <button class="btn btn-sm ms-2" style="background:#f3e8ff;color:#7c3aed;min-width:150px;">Tambah ke Dataset</button>
                             </form>
@@ -84,6 +85,43 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Analisis Kasus Serupa / Similarity -->
+                        <div class="mt-4">
+                            <div class="fw-semibold mb-2" style="font-size:1.1rem;">Analisis Kasus Serupa</div>
+                            <div class="border rounded p-3" style="background:#faf7fb;">
+                                {% if diag.similarity_result.success %}
+                                    <p class="mb-3">Berikut adalah 5 kasus teratas dari dataset yang paling mirip dengan data diagnosis Anda, diurutkan berdasarkan tingkat kemiripan tertinggi.</p>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered" style="background:#fff;">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th scope="col">No</th>
+                                                    <th scope="col">Nomor Kasus</th>
+                                                    <th scope="col">Nilai Kemiripan</th>
+                                                    <th scope="col">Status Depresi Kasus</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for match in diag.similarity_result.top_matches|slice:":5" %}
+                                                <tr>
+                                                    <td>{{ forloop.counter }}</td>
+                                                    <td>Kasus #{{ match.index }}</td>
+                                                    <td><strong>{{ match.similarity|floatformat:2 }}%</strong></td>
+                                                    <td>{{ match.depression }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="mt-2" style="font-size:0.9rem;color:#6c757d;">*Dianalisis terhadap {{ diag.similarity_result.total_cases }} total kasus dalam dataset.</div>
+                                {% else %}
+                                    <div style="color: #d32f2f; text-align: center; padding: 10px;">
+                                        {{ diag.similarity_result.message|default:"Analisis kemiripan tidak tersedia untuk data ini." }}
+                                    </div>      
+                                {% endif %}
+                            </div>
                         </div>
                         <button class="btn btn-sm tutup-detail-btn mt-2" style="background:#C084FC;color:#fff;">Tutup Detail</button>
                     </div>

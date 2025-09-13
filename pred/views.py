@@ -143,6 +143,24 @@ def user(request):
     for diag in diagnosis_history:
         diag.data_summary = get_data_summary_for_submission(diag)
         diag.result_text = get_result_text_for_submission(diag)
+        # Tambahkan pemanggilan analisis similaritas di sini
+        form_data_for_similarity = getattr(diag, 'form_data', None) or {}
+
+        # Jika form_data kosong (untuk data lama), rekonstruksi dari field model
+        if not form_data_for_similarity:
+            form_data_for_similarity = {
+                'gender': getattr(diag, 'gender', ''),
+                'age': getattr(diag, 'age', ''),
+                'work_hours': getattr(diag, 'work_hours', ''),
+                'sleep_duration': getattr(diag, 'sleep_duration', ''),
+                'work_pressure': getattr(diag, 'work_pressure', ''),
+                'job_satisfaction': getattr(diag, 'job_satisfaction', ''),
+                'financial_stress': getattr(diag, 'financial_stress', ''),
+                'dietary_habits': getattr(diag, 'dietary_habits', ''),
+                'suicidal_thoughts': getattr(diag, 'suicidal_thoughts', ''),
+                'family_history_of_mental_illness': getattr(diag, 'family_history_of_mental_illness', ''),
+            }
+        diag.similarity_result = find_similar_cases(form_data_for_similarity)
     context = {
         'user': request.user,
         'user_is_admin_or_expert': user_is_admin_or_expert,
@@ -460,6 +478,7 @@ def find_similar_cases(form_data):
 
             top_matches.append({
                 'similarity': float(similarity_score * 100),  # Convert to percentage and ensure float
+                'index': int(idx + 1), # Tambahkan +1 agar indeks dimulai dari 1 (lebih human-readable)
                 'gender': gender_display,
                 'age': int(match_data['age']),  # Convert to regular int
                 'work_pressure': get_pressure_display(match_data['work_pressure']),
@@ -573,6 +592,7 @@ def diagnosis(request):
             try:
                 similarity_result = find_similar_cases(form.cleaned_data)
                 print(f"✅ Similarity analysis completed: {similarity_result.get('success', False)}")
+                
                 if not similarity_result.get('success', False):
                     print(f"❌ Similarity analysis failed: {similarity_result.get('message', 'Unknown error')}")
             except Exception as e:
@@ -1289,7 +1309,7 @@ def add_to_dataset(new_row):
 
         counter += 1
 
-        if counter >= 2:
+        if counter >= 50:
             # Retrain model
             retrain_model(dataset_path, model_path)
             counter = 0  # Reset counter
