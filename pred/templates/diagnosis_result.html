@@ -43,28 +43,6 @@
     {% endif %}
 
 
-    <!-- Analisis Kasus Serupa -->
-    <div class="mb-4">
-        <div class="fw-semibold mb-2" style="color:#C084FC;font-size:1.15rem;">Analisis Kasus Serupa</div>
-        <div class="border rounded p-3" style="background:#faf7fb;">
-            {% if similarity_result.success %}
-                <div class="mb-2" style="font-weight:600;color:#7c3aed;">
-                    Kecocokan Terbaik: <span style="font-weight:700;">{{ similarity_result.best_similarity|floatformat:1 }}% Kemiripan</span>
-                </div>
-                <div class="mb-2">
-                    <div><b>Jenis Kelamin:</b> {{ similarity_result.best_match.gender }}</div>
-                    <div><b>Usia:</b> {{ similarity_result.best_match.age }}</div>
-                    <div><b>Status Depresi:</b> {{ similarity_result.best_match.depression }}</div>
-                </div>
-                <div style="font-size:0.95rem;color:#888;">Dianalisis terhadap {{ similarity_result.total_cases }} kasus dari dataset</div>
-            {% else %}
-                <div style="color: #d32f2f; text-align: center; padding: 10px;">
-                    {{ similarity_result.message|default:"Analisis kemiripan tidak tersedia" }}
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
 
     <div class="mb-4">
         <div class="p-3 rounded" style="background:#FFEB3B; border:1px solid #E0C200;">
